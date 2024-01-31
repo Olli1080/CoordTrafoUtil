@@ -60,9 +60,20 @@ bool TransformationMeta::isLeftHanded() const
 
 Eigen::Matrix3f TransformationMeta::get_conv_matrix(const TransformationMeta& target) const
 {
-	Eigen::Matrix3f out = Eigen::Matrix3f::Zero();
+	Eigen::Matrix3f out;
+
 	for (const auto& [column, row, multiplier] : assignments(*this, target))
-		out(row, column) = multiplier * scale.factor(target.scale);
+	{
+		//doesn't matter if we go over x or y for the result
+		//only matters for cache performance
+		for (int8_t x = 0; x < 3; ++x)
+		{
+			if (x == column)
+				out(row, column) = multiplier * scale.factor(target.scale);
+			else
+				out(row, x) = 0.f;
+		}
+	}
 
 	return out;
 }
