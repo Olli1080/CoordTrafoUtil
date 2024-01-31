@@ -64,8 +64,10 @@ namespace Transformation
 	static std::tuple<int8_t, int8_t, float> compute_assignment(AxisAlignment axis, AxisAlignment target_axis);
 	static std::array<std::tuple<int8_t, int8_t, float>, 3> compute_assignments(const TransformationMeta& origin, const TransformationMeta& target);
 
-	struct TransformationConverter
+	class TransformationConverter
 	{
+	public:
+
 		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target);
 
 		[[nodiscard]] Eigen::Matrix3f get_conv_matrix() const;
