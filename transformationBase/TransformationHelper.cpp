@@ -68,12 +68,12 @@ namespace Transformation
 		{
 			//doesn't matter if we go over x or y for the result
 			//only matters for cache performance
-			for (int8_t x = 0; x < 3; ++x)
+			for (int8_t y = 0; y < 3; ++y)
 			{
-				if (x == column)
+				if (y == row)
 					out(row, column) = multiplier * factor;
 				else
-					out(row, x) = 0.f;
+					out(y, column) = 0.f;
 			}
 		}
 
