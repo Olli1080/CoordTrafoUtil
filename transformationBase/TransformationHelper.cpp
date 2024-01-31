@@ -108,7 +108,9 @@ std::function<Eigen::Matrix4f(const Eigen::Matrix4f&)> TransformationMeta::gener
 
 Eigen::Matrix4f TransformationMeta::convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in, float scale)
 {
-	Eigen::Matrix4f out = Eigen::Matrix4f::Zero();
+	Eigen::Matrix4f out;
+	for (size_t x = 0; x < 3; ++x)
+		out(3, x) = 0.f;
 	out(3, 3) = 1.f;
 
 	for (size_t y = 0; y < 3; ++y)
