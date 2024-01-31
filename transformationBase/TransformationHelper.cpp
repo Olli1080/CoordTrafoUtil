@@ -96,10 +96,11 @@ namespace Transformation
 			out.w() = in.w();
 
 		auto& coeffs = out.coeffs();
-		coeffs[get<1>(ttt[0])] = in.x() * get<2>(ttt[0]);
-		coeffs[get<1>(ttt[1])] = in.y() * get<2>(ttt[1]);
-		coeffs[get<1>(ttt[2])] = in.z() * get<2>(ttt[2]);
+		const auto& in_c = in.coeffs();
 
+		for (const auto& [column, row, multiplier] : assignments)
+			coeffs[row] = in_c[column] * multiplier;
+		
 		return out;
 	}
 
@@ -122,14 +123,16 @@ namespace Transformation
 
 		for (size_t y = 0; y < 3; ++y)
 		{
-			const auto& for_row = ttt[y];
+			//column == y
+			const auto& [column, out_row, multiplier_y] = ttt[y];
 
 			for (size_t x = 0; x < 3; ++x)
 			{
-				const auto& for_col = ttt[x];
-				out(get<1>(for_row), get<1>(for_col)) = in(y, x) * get<2>(for_row) * get<2>(for_col);
+				//exploiting symmetry //row == x
+				const auto& [row, out_column, multiplier_x] = ttt[x];
+				out(out_row, out_column) = in(y, x) * multiplier_y * multiplier_x;
 			}
-			out(get<1>(for_row), 3) = in(y, 3) * get<2>(for_row);
+			out(out_row, 3) = in(y, 3) * multiplier_y;
 		}
 		for (size_t y = 0; y < 3; ++y)
 			out(y, 3) *= scale;
