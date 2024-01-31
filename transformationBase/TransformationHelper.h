@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include <ratio>
 
 #include <Eigen/Core>
 
@@ -26,19 +27,42 @@ enum class TransformOperation
 	FORWARD_AND_UP
 };
 
-struct AxisAlignmentRuntime
+struct AxisAlignment
 {
 	Axis axis;
 	AxisDirection direction;
+};
+
+struct Ratio
+{
+	std::intmax_t Num;
+	std::intmax_t Denom;
+
+	Ratio(std::intmax_t Num, std::intmax_t Denom);
+
+	template<std::intmax_t Num, std::intmax_t Denom>
+	inline Ratio()
+		: Num(Num), Denom(Denom)
+	{}
+
+	template<std::intmax_t Num, std::intmax_t Denom>
+	inline Ratio(std::ratio<Num, Denom> ratio)
+		: Num(Num), Denom(Denom)
+	{}
+
+	[[nodiscard]] float factor() const;
+	[[nodiscard]] float factor(const Ratio& other) const;
 };
 
 
 struct TransformationMeta
 {
 	TransformationMeta(
-		AxisAlignmentRuntime right,
-		AxisAlignmentRuntime forward,
-		AxisAlignmentRuntime up);
+		AxisAlignment right,
+		AxisAlignment forward,
+		AxisAlignment up,
+		Ratio scale = {1, 1}
+	);
 
 	TransformationMeta(const TransformationMeta& other);
 
@@ -58,15 +82,17 @@ private:
 	void rotateLeft();
 	void rotateRight();
 
-	static std::tuple<int8_t, int8_t, float> assignment(AxisAlignmentRuntime axis, AxisAlignmentRuntime target_axis);
+	static std::tuple<int8_t, int8_t, float> assignment(AxisAlignment axis, AxisAlignment target_axis);
 
 	static std::array<std::tuple<int8_t, int8_t, float>, 3> assignments(const TransformationMeta& origin, const TransformationMeta& target);
 
-	static Eigen::Matrix4f convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in);
+	static Eigen::Matrix4f convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in, float scale);
 
-	AxisAlignmentRuntime right;
-	AxisAlignmentRuntime forward;
-	AxisAlignmentRuntime up;
+	AxisAlignment right;
+	AxisAlignment forward;
+	AxisAlignment up;
+
+	Ratio scale;
 
 	mutable std::unique_ptr<bool> right_handed;
 };

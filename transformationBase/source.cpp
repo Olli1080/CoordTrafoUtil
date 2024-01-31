@@ -393,14 +393,15 @@ int main()
 	{
 		{Axis::X, AxisDirection::POSITIVE},
 		{Axis::Y, AxisDirection::NEGATIVE},
-		{Axis::Z, AxisDirection::NEGATIVE}
+		{Axis::Z, AxisDirection::NEGATIVE},
 	};
 
-	TransformationMeta target = 
+	TransformationMeta target =
 	{
 		{ Axis::X, AxisDirection::POSITIVE },
 		{ Axis::Z, AxisDirection::POSITIVE },
-		{ Axis::Y, AxisDirection::POSITIVE }
+		{ Axis::Y, AxisDirection::POSITIVE },
+		std::centi{}
 	};
 
 	Eigen::Matrix4f tempMat;

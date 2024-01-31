@@ -2,15 +2,16 @@
 
 #include <Eigen/Geometry>
 
-TransformationMeta::TransformationMeta(AxisAlignmentRuntime right, AxisAlignmentRuntime forward, AxisAlignmentRuntime up)
-	: right(right), forward(forward), up(up)
+TransformationMeta::TransformationMeta(AxisAlignment right, AxisAlignment forward, AxisAlignment up,
+	Ratio scale)
+	: right(right), forward(forward), up(up), scale(scale)
 {
 	if (right.axis == forward.axis || forward.axis == up.axis || right.axis == up.axis)
 		throw std::exception("The same axis occurs twice!");
 }
 
 TransformationMeta::TransformationMeta(const TransformationMeta& other)
-	: right(other.right), forward(other.forward), up(other.up)
+	: right(other.right), forward(other.forward), up(other.up), scale(other.scale)
 {
 	if (other.right_handed)
 		right_handed = std::make_unique<bool>(*other.right_handed);
@@ -60,25 +61,16 @@ bool TransformationMeta::isLeftHanded() const
 Eigen::Matrix3f TransformationMeta::get_conv_matrix(const TransformationMeta& target) const
 {
 	Eigen::Matrix3f out = Eigen::Matrix3f::Zero();
-	{
-		auto [column, row, multiplier] = assignment(right, target.right);
-		out(row, column) = multiplier;
-	}
-	{
-		auto [column, row, multiplier] = assignment(forward, target.forward);
-		out(row, column) = multiplier;
-	}
-	{
-		auto [column, row, multiplier] = assignment(up, target.up);
-		out(row, column) = multiplier;
-	}
+	for (const auto& [column, row, multiplier] : assignments(*this, target))
+		out(row, column) = multiplier * scale.factor(target.scale);
+
 	return out;
 }
 
 Eigen::Matrix4f TransformationMeta::convert_matrix(const TransformationMeta& target, const Eigen::Matrix4f& in) const
 {
 	const auto ttt = assignments(*this, target);
-	return convert(ttt, in);
+	return convert(ttt, in, scale.factor(target.scale));
 }
 
 Eigen::Quaternion<float> TransformationMeta::convert_quaternion(const TransformationMeta& target, const Eigen::Quaternion<float>& in) const
@@ -108,13 +100,13 @@ Eigen::Vector3f TransformationMeta::convert_point(const TransformationMeta& targ
 std::function<Eigen::Matrix4f(const Eigen::Matrix4f&)> TransformationMeta::generate_convert_function(const TransformationMeta& target) const
 {
 	const auto ttt = assignments(*this, target);
-	return [ttt](const Eigen::Matrix4f& in)
+	return [ttt, factor = this->scale.factor(target.scale)](const Eigen::Matrix4f& in)
 		{
-			return convert(ttt, in);
+			return convert(ttt, in, factor);
 		};
 }
 
-Eigen::Matrix4f TransformationMeta::convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in)
+Eigen::Matrix4f TransformationMeta::convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in, float scale)
 {
 	Eigen::Matrix4f out = Eigen::Matrix4f::Zero();
 	out(3, 3) = 1.f;
@@ -130,6 +122,8 @@ Eigen::Matrix4f TransformationMeta::convert(const std::array<std::tuple<int8_t, 
 		}
 		out(get<1>(for_row), 3) = in(y, 3) * get<2>(for_row);
 	}
+	for (size_t y = 0; y < 3; ++y)
+		out(y, 3) *= scale;
 	return out;
 }
 
@@ -149,7 +143,7 @@ void TransformationMeta::rotateRight()
 	right = tmp;
 }
 
-std::tuple<int8_t, int8_t, float> TransformationMeta::assignment(AxisAlignmentRuntime axis, AxisAlignmentRuntime target_axis)
+std::tuple<int8_t, int8_t, float> TransformationMeta::assignment(AxisAlignment axis, AxisAlignment target_axis)
 {
 	//column, row, multiplier
 	return {
@@ -179,4 +173,18 @@ AxisDirection invert(AxisDirection in)
 	if (in == AxisDirection::POSITIVE)
 		return AxisDirection::NEGATIVE;
 	return AxisDirection::POSITIVE;
+}
+
+Ratio::Ratio(std::intmax_t Num, std::intmax_t Denom)
+	: Num(Num), Denom(Denom)
+{}
+
+float Ratio::factor() const
+{
+	return static_cast<float>(Num) / static_cast<float>(Denom);
+}
+
+float Ratio::factor(const Ratio& other) const
+{
+	return static_cast<float>(Num * other.Denom) / static_cast<float>(Denom * other.Num);
 }
