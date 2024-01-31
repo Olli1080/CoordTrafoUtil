@@ -61,6 +61,7 @@ bool TransformationMeta::isLeftHanded() const
 Eigen::Matrix3f TransformationMeta::get_conv_matrix(const TransformationMeta& target) const
 {
 	Eigen::Matrix3f out;
+	const float factor = scale.factor(target.scale);
 
 	for (const auto& [column, row, multiplier] : assignments(*this, target))
 	{
@@ -69,7 +70,7 @@ Eigen::Matrix3f TransformationMeta::get_conv_matrix(const TransformationMeta& ta
 		for (int8_t x = 0; x < 3; ++x)
 		{
 			if (x == column)
-				out(row, column) = multiplier * scale.factor(target.scale);
+				out(row, column) = multiplier * factor;
 			else
 				out(row, x) = 0.f;
 		}
@@ -104,8 +105,13 @@ Eigen::Quaternion<float> TransformationMeta::convert_quaternion(const Transforma
 
 Eigen::Vector3f TransformationMeta::convert_point(const TransformationMeta& target, const Eigen::Vector3f& in) const
 {
-	const auto convMatrix = get_conv_matrix(target);
-	return convMatrix * in;
+	const float factor = scale.factor(target.scale);
+	Eigen::Vector3f out;
+
+	for (const auto& [column, row, multiplier] : assignments(*this, target))
+		out(row, 0) = in(column, 0) * factor * multiplier;
+
+	return out;
 }
 
 std::function<Eigen::Matrix4f(const Eigen::Matrix4f&)> TransformationMeta::generate_convert_function(const TransformationMeta& target) const
