@@ -88,8 +88,7 @@ namespace Transformation
 	Eigen::Quaternion<float> TransformationConverter::convert_quaternion(const Eigen::Quaternion<float>& in) const
 	{
 		Eigen::Quaternion<float> out;
-
-		const auto& ttt = assignments;
+		
 		if (hand_changed)
 			out.w() = -in.w();
 		else
