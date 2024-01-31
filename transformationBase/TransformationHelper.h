@@ -61,8 +61,8 @@ namespace Transformation
 	typedef std::array<Assignment, 3> SparseAssignments;
 
 	class TransformationMeta;
-	static std::tuple<int8_t, int8_t, float> compute_assignment(AxisAlignment axis, AxisAlignment target_axis);
-	static std::array<std::tuple<int8_t, int8_t, float>, 3> compute_assignments(const TransformationMeta& origin, const TransformationMeta& target);
+	static Assignment compute_assignment(AxisAlignment axis, AxisAlignment target_axis);
+	static SparseAssignments compute_assignments(const TransformationMeta& origin, const TransformationMeta& target);
 
 	class TransformationConverter
 	{
@@ -78,7 +78,7 @@ namespace Transformation
 
 	private:
 
-		static Eigen::Matrix4f convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in, float scale);
+		static Eigen::Matrix4f convert(const SparseAssignments& ttt, const Eigen::Matrix4f& in, float scale);
 
 		float factor;
 		SparseAssignments assignments;
