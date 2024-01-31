@@ -131,10 +131,8 @@ namespace Transformation
 				const auto& [row, out_column, multiplier_x] = ttt[x];
 				out(out_row, out_column) = in(y, x) * multiplier_y * multiplier_x;
 			}
-			out(out_row, 3) = in(y, 3) * multiplier_y;
+			out(out_row, 3) = in(y, 3) * multiplier_y * scale;
 		}
-		for (size_t y = 0; y < 3; ++y)
-			out(y, 3) *= scale;
 		return out;
 	}
 
