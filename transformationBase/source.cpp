@@ -229,6 +229,8 @@
 //	std::cout << "[ " << v.x() << " , " << v.y() << " , " << v.z() << " ]" << std::endl;
 //}
 
+using namespace Transformation;
+
 int main()
 {
 /*	auto xyz_0 = TransformationMeta<Axis::X, AxisDirection::POSITIVE, Axis::Y, AxisDirection::POSITIVE, Axis::Z, AxisDirection::POSITIVE>{}; //x,  y,  z
@@ -410,9 +412,10 @@ int main()
 		20, 21, 22, 23,
 		0, 0, 0, 1;
 
+	TransformationConverter source_to_target(source, target);
 
-	std::cout << source.get_conv_matrix(target) << std::endl << std::endl;
-	std::cout << source.convert_matrix(target, tempMat) << std::endl << std::endl;
+	std::cout << source_to_target.get_conv_matrix() << std::endl << std::endl;
+	std::cout << source_to_target.convert_matrix(tempMat) << std::endl << std::endl;
 
 	TransformationMeta source_2 = 
 	{
@@ -421,12 +424,11 @@ int main()
 		{ Axis::X, AxisDirection::POSITIVE }
 	};
 
-	std::cout << source_2.get_conv_matrix(target) << std::endl << std::endl;
-	std::cout << source_2.convert_matrix(target, tempMat) << std::endl << std::endl;
+	TransformationConverter source_2_to_target(source_2, target);
 
-	const auto fct = source_2.generate_convert_function(target);
-	std::cout << fct(tempMat) << std::endl << std::endl;
-
+	std::cout << source_2_to_target.get_conv_matrix() << std::endl << std::endl;
+	std::cout << source_2_to_target.convert_matrix(tempMat) << std::endl << std::endl;
+	
 	std::cout << source_2.isLeftHanded() << std::endl << std::endl;
 	
 
@@ -444,11 +446,16 @@ int main()
 		{ Axis::Y, AxisDirection::POSITIVE }
 	};
 
+	TransformationConverter source_3_to_unity(source_3, unity);
+
 	Eigen::Quaternion<float> quat; quat = Eigen::AngleAxisf(-2.237f, Eigen::Vector3f::UnitX())
 		* Eigen::AngleAxisf(-2.217f, Eigen::Vector3f::UnitY())
 		* Eigen::AngleAxisf(-0.030f, Eigen::Vector3f::UnitZ());
 	std::cout << quat << std::endl;
-	std::cout << source_3.convert_quaternion(unity, quat).normalized() << std::endl;
+	std::cout << source_3_to_unity.convert_quaternion(quat).normalized() << std::endl << std::endl;
+
+	std::cout << source_3_to_unity.get_conv_matrix() << std::endl;
+	std::cout << source_3_to_unity.convert_point(Eigen::Vector3f{ 1, 2, 3 }) << std::endl;
 
 	return 0;
 }

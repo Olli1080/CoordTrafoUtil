@@ -5,94 +5,115 @@
 
 #include <Eigen/Core>
 
-enum class Axis : int8_t
+namespace Transformation
 {
-	X = 0,
-	Y = 1,
-	Z = 2
-};
+	enum class Axis : int8_t
+	{
+		X = 0,
+		Y = 1,
+		Z = 2
+	};
 
-enum class AxisDirection : int8_t
-{
-	POSITIVE = +1,
-	NEGATIVE = -1
-};
+	enum class AxisDirection : int8_t
+	{
+		POSITIVE = +1,
+		NEGATIVE = -1
+	};
 
-[[nodiscard]] AxisDirection invert(AxisDirection in);
+	[[nodiscard]] AxisDirection invert(AxisDirection in);
 
-enum class TransformOperation
-{
-	RIGHT_AND_FORWARD,
-	RIGHT_AND_UP,
-	FORWARD_AND_UP
-};
+	enum class TransformOperation
+	{
+		RIGHT_AND_FORWARD,
+		RIGHT_AND_UP,
+		FORWARD_AND_UP
+	};
 
-struct AxisAlignment
-{
-	Axis axis;
-	AxisDirection direction;
-};
+	struct AxisAlignment
+	{
+		Axis axis;
+		AxisDirection direction;
+	};
 
-struct Ratio
-{
-	std::intmax_t Num;
-	std::intmax_t Denom;
+	struct Ratio
+	{
+		std::intmax_t Num;
+		std::intmax_t Denom;
 
-	Ratio(std::intmax_t Num, std::intmax_t Denom);
+		Ratio(std::intmax_t Num, std::intmax_t Denom);
 
-	template<std::intmax_t Num, std::intmax_t Denom>
-	inline Ratio()
-		: Num(Num), Denom(Denom)
-	{}
+		template<std::intmax_t Num, std::intmax_t Denom>
+		inline Ratio()
+			: Num(Num), Denom(Denom)
+		{}
 
-	template<std::intmax_t Num, std::intmax_t Denom>
-	inline Ratio(std::ratio<Num, Denom> ratio)
-		: Num(Num), Denom(Denom)
-	{}
+		template<std::intmax_t Num, std::intmax_t Denom>
+		inline Ratio(std::ratio<Num, Denom> ratio)
+			: Num(Num), Denom(Denom)
+		{}
 
-	[[nodiscard]] float factor() const;
-	[[nodiscard]] float factor(const Ratio& other) const;
-};
+		[[nodiscard]] float factor() const;
+		[[nodiscard]] float factor(const Ratio& other) const;
+	};
 
+	//column, row, multiplier
+	typedef std::tuple<int8_t, int8_t, float> Assignment;
+	typedef std::array<Assignment, 3> SparseAssignments;
 
-struct TransformationMeta
-{
-	TransformationMeta(
-		AxisAlignment right,
-		AxisAlignment forward,
-		AxisAlignment up,
-		Ratio scale = {1, 1}
-	);
+	class TransformationMeta;
+	static std::tuple<int8_t, int8_t, float> compute_assignment(AxisAlignment axis, AxisAlignment target_axis);
+	static std::array<std::tuple<int8_t, int8_t, float>, 3> compute_assignments(const TransformationMeta& origin, const TransformationMeta& target);
 
-	TransformationMeta(const TransformationMeta& other);
+	struct TransformationConverter
+	{
+		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target);
 
-	[[nodiscard]] bool isRightHanded() const;
-	[[nodiscard]] bool isLeftHanded() const;
+		[[nodiscard]] Eigen::Matrix3f get_conv_matrix() const;
 
-	[[nodiscard]] Eigen::Matrix3f get_conv_matrix(const TransformationMeta& target) const;
+		[[nodiscard]] Eigen::Matrix4f convert_matrix(const Eigen::Matrix4f& in) const;
+		[[nodiscard]] Eigen::Quaternion<float> convert_quaternion(const Eigen::Quaternion<float>& in) const;
+		[[nodiscard]] Eigen::Vector3f convert_point(const Eigen::Vector3f& in) const;
 
-	[[nodiscard]] Eigen::Matrix4f convert_matrix(const TransformationMeta& target, const Eigen::Matrix4f& in) const;
-	[[nodiscard]] Eigen::Quaternion<float> convert_quaternion(const TransformationMeta& target, const Eigen::Quaternion<float>& in) const;
-	[[nodiscard]] Eigen::Vector3f convert_point(const TransformationMeta& target, const Eigen::Vector3f& in) const;
+	private:
 
-	[[nodiscard]] std::function<Eigen::Matrix4f(const Eigen::Matrix4f&)> generate_convert_function(const TransformationMeta& target) const;
+		static Eigen::Matrix4f convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in, float scale);
 
-private:
+		float factor;
+		SparseAssignments assignments;
+		bool hand_changed;
+	};
 
-	void rotateLeft();
-	void rotateRight();
+	class TransformationMeta
+	{
+	public:
 
-	static std::tuple<int8_t, int8_t, float> assignment(AxisAlignment axis, AxisAlignment target_axis);
+		TransformationMeta(
+			AxisAlignment right,
+			AxisAlignment forward,
+			AxisAlignment up,
+			Ratio scale = { 1, 1 }
+		);
 
-	static std::array<std::tuple<int8_t, int8_t, float>, 3> assignments(const TransformationMeta& origin, const TransformationMeta& target);
+		TransformationMeta(const TransformationMeta& other);
 
-	static Eigen::Matrix4f convert(const std::array<std::tuple<int8_t, int8_t, float>, 3>& ttt, const Eigen::Matrix4f& in, float scale);
+		[[nodiscard]] bool isRightHanded() const;
+		[[nodiscard]] bool isLeftHanded() const;
 
-	AxisAlignment right;
-	AxisAlignment forward;
-	AxisAlignment up;
+		Ratio scale;
 
-	Ratio scale;
+		const AxisAlignment& right() const;
+		const AxisAlignment& forward() const;
+		const AxisAlignment& up() const;
 
-	mutable std::unique_ptr<bool> right_handed;
-};
+	private:
+
+		void rotateLeft();
+		void rotateRight();
+
+		AxisAlignment m_right;
+		AxisAlignment m_forward;
+		AxisAlignment m_up;
+
+		mutable std::unique_ptr<bool> right_handed;
+	};
+}
