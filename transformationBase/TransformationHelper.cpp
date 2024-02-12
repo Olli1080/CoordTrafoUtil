@@ -113,6 +113,64 @@ namespace Transformation
 		return out;
 	}
 
+	pcl::PointXYZ TransformationConverter::convert_point_proto(const generated::vertex_3d& in_f) const
+	{
+		pcl::PointXYZ out;
+
+		const auto in = std::to_array({ in_f.x(), in_f.y(), in_f.z() });
+
+		for (const auto& [column, row, multiplier] : assignments)
+			out.data[row] = in[column] * factor * multiplier;
+
+		return out;
+	}
+
+	Eigen::Vector3f TransformationConverter::convert_point_proto_eigen(const generated::vertex_3d& in_f) const
+	{
+		Eigen::Vector3f out;
+
+		const auto in = std::to_array({ in_f.x(), in_f.y(), in_f.z() });
+
+		for (const auto& [column, row, multiplier] : assignments)
+			out.data()[row] = in[column] * factor * multiplier;
+
+		return out;
+	}
+
+	Eigen::Quaternionf TransformationConverter::convert_quaternion_proto(const generated::quaternion& in) const
+	{
+		Eigen::Quaternionf out;
+
+		if (hand_changed)
+			out.w() = -in.w();
+		else
+			out.w() = in.w();
+		
+		const auto in_c = std::to_array<float>({ in.x(), in.y(), in.z() });
+
+		for (const auto& [column, row, multiplier] : assignments)
+			out.coeffs()[row] = in_c[column] * multiplier;
+
+		return out;
+	}
+
+	Eigen::Vector3f TransformationConverter::convert_size_proto(const generated::size_3d& in_f) const
+	{
+		Eigen::Vector3f out;
+
+		const auto in = std::to_array({ in_f.x(), in_f.y(), in_f.z() });
+
+		for (const auto& [column, row, multiplier] : assignments)
+			out[row] = in[column] * factor;
+
+		return out;
+	}
+
+	float TransformationConverter::convert_scale(float scale) const
+	{
+		return factor * scale;
+	}
+
 	Eigen::Matrix4f TransformationConverter::convert(const SparseAssignments& ttt, const Eigen::Matrix4f& in, float scale)
 	{
 		Eigen::Matrix4f out;

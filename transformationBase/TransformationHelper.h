@@ -4,6 +4,10 @@
 #include <ratio>
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <pcl/impl/point_types.hpp>
+
+#include <vertex.pb.h>
 
 namespace Transformation
 {
@@ -76,6 +80,13 @@ namespace Transformation
 		[[nodiscard]] Eigen::Quaternion<float> convert_quaternion(const Eigen::Quaternion<float>& in) const;
 		[[nodiscard]] Eigen::Vector3f convert_point(const Eigen::Vector3f& in) const;
 
+		[[nodiscard]] pcl::PointXYZ convert_point_proto(const generated::vertex_3d& in) const;
+		[[nodiscard]] Eigen::Vector3f convert_point_proto_eigen(const generated::vertex_3d& in) const;
+		[[nodiscard]] Eigen::Quaternionf convert_quaternion_proto(const generated::quaternion& in) const;
+		[[nodiscard]] Eigen::Vector3f convert_size_proto(const generated::size_3d& in) const;
+
+		[[nodiscard]] float convert_scale(float scale) const;
+
 	private:
 
 		static Eigen::Matrix4f convert(const SparseAssignments& ttt, const Eigen::Matrix4f& in, float scale);
@@ -118,4 +129,10 @@ namespace Transformation
 
 		mutable std::unique_ptr<bool> right_handed;
 	};
+
+	inline static Transformation::TransformationMeta CoreMeta(
+		{ Transformation::Axis::Y, Transformation::AxisDirection::POSITIVE },
+		{ Transformation::Axis::X, Transformation::AxisDirection::NEGATIVE },
+		{ Transformation::Axis::Z, Transformation::AxisDirection::POSITIVE }
+	);
 }

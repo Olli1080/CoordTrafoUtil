@@ -1,5 +1,13 @@
 {
   "dependencies": [
-    "eigen3"
+    "eigen3",
+    {
+      "name": "pcl",
+      "features": [
+          "simulation",
+          "vtk"        
+      ]
+    },
+    "grpc"
   ]
 }
