@@ -185,6 +185,9 @@
     <ClInclude Include="TransformationHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="GrpcCodeGen" BeforeTargets="InitializeBuildStatus">
+      <Exec Command="$(SolutionDir)..\..\assets\grpc\build_proto_x64.bat" />
+  </Target>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
