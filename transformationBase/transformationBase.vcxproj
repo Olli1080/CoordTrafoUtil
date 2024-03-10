@@ -186,7 +186,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="GrpcCodeGen" BeforeTargets="InitializeBuildStatus">
-      <Exec Command="$(SolutionDir)..\..\assets\grpc\build_proto_x64.bat" />
+      <Exec Command="python $(SolutionDir)..\..\assets\grpc\build_proto_x64.py" />
   </Target>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
