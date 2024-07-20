@@ -24,7 +24,7 @@ namespace Transformation
 		if (right_handed)
 			return *right_handed;
 
-		auto cpy = *this;
+		TransformationMeta cpy = *this;
 
 		//1. normalize to positive X axis as right axis
 		if (m_right.axis == Axis::X)

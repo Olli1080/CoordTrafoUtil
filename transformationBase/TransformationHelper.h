@@ -71,13 +71,19 @@ namespace Transformation
 	template<typename T, typename ValueType>
 	concept matrix_access = requires(T v0, const T v1, size_t row, size_t column)
 	{
+		typename T::type;
+
 		{ v0.operator()(row, column) } -> std::same_as<ValueType&>;
 		{ v1.operator()(row, column) } -> std::same_as<const ValueType&>;
+		
+		{ std::same_as<decltype(T::size), size_t> };
 	};
 
 	template<typename T, typename ValueType>
 	concept vector_access = requires(T v0, const T v1, size_t idx, ValueType value)
 	{
+		typename T::type;
+
 		{ v0.set_x(value) } -> std::same_as<void>;
 		{ v0.set_y(value) } -> std::same_as<void>;
 		{ v0.set_z(value) } -> std::same_as<void>;
@@ -93,6 +99,8 @@ namespace Transformation
 	template<typename T, typename ValueType>
 	concept quaternion_access = requires(T v0, const T v1, size_t idx, ValueType value)
 	{
+		typename T::type;
+
 		{ v0.set_x(value) } -> std::same_as<void>;
 		{ v0.set_y(value) } -> std::same_as<void>;
 		{ v0.set_z(value) } -> std::same_as<void>;
@@ -121,6 +129,8 @@ namespace Transformation
 		float& operator()(size_t row, size_t column);
 		const float& operator()(size_t row, size_t column) const;
 
+		static constexpr size_t size = 4;
+
 		Eigen::Matrix4f& matrix;
 	};
 
@@ -136,6 +146,8 @@ namespace Transformation
 
 		float& operator()(size_t row, size_t column);
 		const float& operator()(size_t row, size_t column) const;
+
+		static constexpr size_t size = 3;
 
 		Eigen::Matrix3f& matrix;
 	};
@@ -345,6 +357,8 @@ namespace Transformation
 		template<matrix_access<float> m>
 		m& get_conv_matrix(m& out) const
 		{
+			static_assert(m::size == 3 || m::size == 4);
+
 			for (const auto& [column, row, multiplier] : assignments)
 			{
 				//doesn't matter if we go over x or y for the result
@@ -357,6 +371,18 @@ namespace Transformation
 						out(y, column) = 0.f;
 				}
 			}
+			if constexpr (m::size == 4)
+			{
+				out(3, 0) = 0.f;
+				out(3, 1) = 0.f;
+				out(3, 2) = 0.f;
+				out(3, 3) = 1.f;
+
+				out(0, 3) = 0.f;
+				out(1, 3) = 0.f;
+				out(2, 3) = 0.f;
+			}
+
 			return out;
 		}
 
@@ -456,6 +482,8 @@ namespace Transformation
 		template<matrix_access<float> m_0, matrix_access<float> m_1>
 		static void convert(const SparseAssignments& ttt, const m_0& in, m_1& out, float scale)
 		{
+			static_assert(m_0::size == 4 && m_1::size == 4);
+
 			for (size_t x = 0; x < 3; ++x)
 				out(3, x) = 0.f;
 			out(3, 3) = 1.f;
