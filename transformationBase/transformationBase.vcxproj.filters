@@ -21,58 +21,10 @@
     <ClCompile Include="TransformationHelper.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\debug.grpc.pb.cc">
+    <ClCompile Include="Plugins\eigen.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\debug.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\depth_image.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\depth_image.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\hand_tracking.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\hand_tracking.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\meta_data.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\meta_data.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object_prototype.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object_prototype.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\robot.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\robot.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\services.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\services.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\vertex.grpc.pb.cc">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\vertex.pb.cc">
+    <ClCompile Include="Plugins\pcl.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,58 +32,16 @@
     <ClInclude Include="TransformationHelper.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\debug.grpc.pb.h">
+    <ClInclude Include="Plugins\eigen.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\debug.pb.h">
+    <ClInclude Include="Plugins\pcl.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\depth_image.grpc.pb.h">
+    <ClInclude Include="Plugins\plugins.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\depth_image.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\hand_tracking.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\hand_tracking.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\meta_data.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\meta_data.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object_prototype.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object_prototype.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\robot.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\robot.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\services.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\services.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\vertex.grpc.pb.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\vertex.pb.h">
+    <ClInclude Include="concepts.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

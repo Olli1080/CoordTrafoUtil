@@ -2,12 +2,9 @@
 #include <cstdint>
 #include <memory>
 #include <ratio>
+#include <array>
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <pcl/impl/point_types.hpp>
-
-#include <vertex.pb.h>
+#include "concepts.h"
 
 namespace Transformation
 {
@@ -68,285 +65,6 @@ namespace Transformation
 	static Assignment compute_assignment(AxisAlignment axis, AxisAlignment target_axis);
 	static SparseAssignments compute_assignments(const TransformationMeta& origin, const TransformationMeta& target);
 
-	template<typename T, typename ValueType>
-	concept matrix_access = requires(T v0, const T v1, size_t row, size_t column)
-	{
-		typename T::type;
-
-		{ v0.operator()(row, column) } -> std::same_as<ValueType&>;
-		{ v1.operator()(row, column) } -> std::same_as<const ValueType&>;
-		
-		{ std::same_as<decltype(T::size), size_t> };
-	};
-
-	template<typename T, typename ValueType>
-	concept vector_access = requires(T v0, const T v1, size_t idx, ValueType value)
-	{
-		typename T::type;
-
-		{ v0.set_x(value) } -> std::same_as<void>;
-		{ v0.set_y(value) } -> std::same_as<void>;
-		{ v0.set_z(value) } -> std::same_as<void>;
-
-		{ v1.get_x() } -> std::same_as<ValueType>;
-		{ v1.get_y() } -> std::same_as<ValueType>;
-		{ v1.get_z() } -> std::same_as<ValueType>;
-
-		{ v0.operator()(idx, value) } -> std::same_as<void>;
-		{ v1.operator()(idx) } -> std::same_as<ValueType>;
-	};
-
-	template<typename T, typename ValueType>
-	concept quaternion_access = requires(T v0, const T v1, size_t idx, ValueType value)
-	{
-		typename T::type;
-
-		{ v0.set_x(value) } -> std::same_as<void>;
-		{ v0.set_y(value) } -> std::same_as<void>;
-		{ v0.set_z(value) } -> std::same_as<void>;
-		{ v0.set_w(value) } -> std::same_as<void>;
-
-		{ v1.get_x() } -> std::same_as<ValueType>;
-		{ v1.get_y() } -> std::same_as<ValueType>;
-		{ v1.get_z() } -> std::same_as<ValueType>;
-		{ v1.get_w() } -> std::same_as<ValueType>;
-
-		//assumes [x,y,z, w]
-		{ v0.operator()(idx, value) } -> std::same_as<void>;
-		{ v1.operator()(idx) } -> std::same_as<ValueType>;
-	};
-
-	class Matrix4Eigen
-	{
-	public:
-
-		typedef Eigen::Matrix4f type;
-
-		Matrix4Eigen(Eigen::Matrix4f& matrix)
-			: matrix(matrix)
-		{}
-
-		float& operator()(size_t row, size_t column);
-		const float& operator()(size_t row, size_t column) const;
-
-		static constexpr size_t size = 4;
-
-		Eigen::Matrix4f& matrix;
-	};
-
-	class Matrix3Eigen
-	{
-	public:
-
-		typedef Eigen::Matrix3f type;
-
-		Matrix3Eigen(Eigen::Matrix3f& matrix)
-			: matrix(matrix)
-		{}
-
-		float& operator()(size_t row, size_t column);
-		const float& operator()(size_t row, size_t column) const;
-
-		static constexpr size_t size = 3;
-
-		Eigen::Matrix3f& matrix;
-	};
-
-	class Vector3Eigen
-	{
-	public:
-
-		typedef Eigen::Vector3f type;
-
-		Vector3Eigen(Eigen::Vector3f& vector)
-			: vector(vector)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-		Eigen::Vector3f& vector;
-	};
-
-	class Vector3PCL
-	{
-	public:
-
-		typedef pcl::PointXYZ type;
-
-		Vector3PCL(pcl::PointXYZ& vector)
-			: vector(vector)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-		pcl::PointXYZ& vector;
-	};
-
-	class Vector3Proto
-	{
-	public:
-
-		typedef generated::vertex_3d type;
-
-		Vector3Proto(generated::vertex_3d& vector)
-			: vector(vector)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-		generated::vertex_3d& vector;
-
-	private:
-
-		static std::array<float(generated::vertex_3d::*)() const, 3> getter;
-		static std::array<void(generated::vertex_3d::*)(float), 3> setter;
-	};
-
-	class Size3Eigen
-	{
-	public:
-
-		typedef Eigen::Vector3f type;
-
-		Size3Eigen(Eigen::Vector3f& vector)
-			: vector(vector)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-		Eigen::Vector3f& vector;
-	};
-
-	class Size3Proto
-	{
-	public:
-
-		typedef generated::size_3d type;
-
-		Size3Proto(generated::size_3d& vector)
-			: vector(vector)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-	private:
-
-		static std::array<float(generated::size_3d::*)() const, 3> getter;
-		static std::array<void(generated::size_3d::*)(float), 3> setter;
-
-		generated::size_3d& vector;
-	};
-
-	class QuaternionEigen
-	{
-	public:
-
-		typedef Eigen::Quaternion<float> type;
-
-		QuaternionEigen(Eigen::Quaternion<float>& quaternion)
-			: quaternion(quaternion)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void set_w(float w);
-		[[nodiscard]] float get_w() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-		Eigen::Quaternion<float>& quaternion;
-	};
-
-	class QuaternionProto
-	{
-	public:
-
-		typedef generated::quaternion type;
-
-		QuaternionProto(generated::quaternion& quaternion)
-			: quaternion(quaternion)
-		{}
-
-		void set_x(float x);
-		[[nodiscard]] float get_x() const;
-
-		void set_y(float y);
-		[[nodiscard]] float get_y() const;
-
-		void set_z(float z);
-		[[nodiscard]] float get_z() const;
-
-		void set_w(float w);
-		[[nodiscard]] float get_w() const;
-
-		void operator()(size_t idx, float value);
-		[[nodiscard]] float operator()(size_t idx) const;
-
-		generated::quaternion& quaternion;
-
-	private:
-
-		static std::array<float(generated::quaternion::*)() const, 4> getter;
-		static std::array<void(generated::quaternion::*)(float), 4> setter;
-	};
 
 	class TransformationConverter
 	{
@@ -354,7 +72,7 @@ namespace Transformation
 
 		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target);
 
-		template<matrix_access<float> m>
+		template<matrix_full_access<float> m>
 		m& get_conv_matrix(m& out) const
 		{
 			static_assert(m::size == 3 || m::size == 4);
@@ -386,7 +104,7 @@ namespace Transformation
 			return out;
 		}
 
-		template<matrix_access<float> m>
+		template<matrix_full_access<float> m>
 		auto get_conv_matrix() const -> typename m::type
 		{
 			typename m::type out;
@@ -398,7 +116,7 @@ namespace Transformation
 
 		[[nodiscard]] float convert_scale(float scale) const;
 
-		template<quaternion_access<float> q_0, quaternion_access<float> q_1>
+		template<quaternion_const_access<float> q_0, quaternion_full_access<float> q_1>
 		q_1& convert_quaternion(const q_0 in, q_1& out) const
 		{
 			if (hand_changed)
@@ -412,7 +130,7 @@ namespace Transformation
 			return out;
 		}
 
-		template<quaternion_access<float> q_1, quaternion_access<float> q_0>
+		template<quaternion_full_access<float> q_1, quaternion_const_access<float> q_0>
 		auto convert_quaternion(const q_0 in) const -> typename q_1::type
 		{
 			typename q_1::type out;
@@ -422,14 +140,14 @@ namespace Transformation
 			return out;
 		}
 
-		template<matrix_access<float> m_0, matrix_access<float> m_1>
+		template<matrix_const_access<float> m_0, matrix_full_access<float> m_1>
 		m_1& convert_matrix(const m_0 in, m_1& out) const
 		{
 			convert(assignments, in, out, factor);
 			return out;
 		}
 
-		template<matrix_access<float> m_1, matrix_access<float> m_0>
+		template<matrix_full_access<float> m_1, matrix_const_access<float> m_0>
 		auto convert_matrix(const m_0 in) const -> typename m_1::type
 		{
 			typename m_1::type out;
@@ -439,7 +157,7 @@ namespace Transformation
 			return out;
 		}
 
-		template<vector_access<float> v_0, vector_access<float> v_1>
+		template<vector_const_access<float> v_0, vector_full_access<float> v_1>
 		v_1& convert_point(const v_0 in, v_1& out) const
 		{
 			for (const auto& [column, row, multiplier] : assignments)
@@ -448,7 +166,7 @@ namespace Transformation
 			return out;
 		}
 
-		template<vector_access<float> v_1, vector_access<float> v_0>
+		template<vector_full_access<float> v_1, vector_const_access<float> v_0>
 		auto convert_point(const v_0 in) const -> typename v_1::type
 		{
 			typename v_1::type out;
@@ -458,7 +176,7 @@ namespace Transformation
 			return out;
 		}
 
-		template<vector_access<float> s_0, vector_access<float> s_1>
+		template<vector_const_access<float> s_0, vector_full_access<float> s_1>
 		s_1& convert_size(const s_0 in, s_1& out) const
 		{
 			for (const auto& [column, row, multiplier] : assignments)
@@ -467,7 +185,7 @@ namespace Transformation
 			return out;
 		}
 
-		template<vector_access<float> s_1, vector_access<float> s_0>
+		template<vector_full_access<float> s_1, vector_const_access<float> s_0>
 		auto convert_size(const s_0 in) const -> typename s_1::type
 		{
 			typename s_1::type out;
@@ -479,7 +197,7 @@ namespace Transformation
 
 	private:
 
-		template<matrix_access<float> m_0, matrix_access<float> m_1>
+		template<matrix_const_access<float> m_0, matrix_full_access<float> m_1>
 		static void convert(const SparseAssignments& ttt, const m_0& in, m_1& out, float scale)
 		{
 			static_assert(m_0::size == 4 && m_1::size == 4);
@@ -541,10 +259,4 @@ namespace Transformation
 
 		mutable std::unique_ptr<bool> right_handed;
 	};
-
-	inline static Transformation::TransformationMeta CoreMeta(
-		{ Transformation::Axis::Y, Transformation::AxisDirection::POSITIVE },
-		{ Transformation::Axis::X, Transformation::AxisDirection::NEGATIVE },
-		{ Transformation::Axis::Z, Transformation::AxisDirection::POSITIVE }
-	);
 }

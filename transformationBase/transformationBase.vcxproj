@@ -61,7 +61,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\assets\grpc\generated\$(Platform);$(SolutionDir)..\..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -77,7 +77,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\assets\grpc\generated\$(Platform);$(SolutionDir)..\..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\externals;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,52 +87,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\debug.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\debug.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\depth_image.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\depth_image.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\hand_tracking.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\hand_tracking.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\meta_data.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\meta_data.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object_prototype.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\object_prototype.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\robot.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\robot.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\services.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\services.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\vertex.grpc.pb.cc" />
-    <ClCompile Include="..\..\..\assets\grpc\generated\x64\vertex.pb.cc" />
+    <ClCompile Include="Plugins\eigen.cpp" />
+    <ClCompile Include="Plugins\pcl.cpp" />
     <ClCompile Include="source.cpp" />
     <ClCompile Include="TransformationHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\debug.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\debug.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\depth_image.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\depth_image.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\hand_tracking.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\hand_tracking.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\meta_data.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\meta_data.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object_prototype.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\object_prototype.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\robot.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\robot.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\services.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\services.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\vertex.grpc.pb.h" />
-    <ClInclude Include="..\..\..\assets\grpc\generated\x64\vertex.pb.h" />
+    <ClInclude Include="Plugins\eigen.h" />
+    <ClInclude Include="Plugins\pcl.h" />
+    <ClInclude Include="Plugins\plugins.h" />
     <ClInclude Include="TransformationHelper.h" />
+    <ClInclude Include="concepts.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="GrpcCodeGen" AfterTargets="VcpkgInstallManifestDependencies">
-    <Exec Command="python $(SolutionDir)..\..\assets\grpc\build_proto_x64.py" />
-  </Target>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

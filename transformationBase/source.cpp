@@ -5,6 +5,7 @@
 //#include <numbers>
 
 #include <Eigen/Dense>
+#include "Plugins/plugins.h"
 
 #include "TransformationHelper.h"
 
