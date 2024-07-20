@@ -413,17 +413,10 @@ int main()
 		0, 0, 0, 1;
 
 	TransformationConverter source_to_target(source, target);
-	Eigen::Matrix3f conv_matrix;
-	Matrix3Eigen conv_proxy{ conv_matrix };
-	source_to_target.get_conv_matrix(conv_proxy);
-	std::cout << conv_matrix << std::endl << std::endl;
-	Matrix4Eigen tempProxy{ tempMat };
+	std::cout << source_to_target.get_conv_matrix<Matrix3Eigen>() << std::endl << std::endl;
 
 	Eigen::Matrix4f converted_matrix;
-	Matrix4Eigen converted_proxy{ converted_matrix };
-
-	source_to_target.convert_matrix(tempProxy, converted_proxy);
-	std::cout << converted_matrix << std::endl << std::endl;
+	std::cout << source_to_target.convert_matrix<Matrix4Eigen>(Matrix4Eigen{ tempMat }) << std::endl << std::endl;
 
 	TransformationMeta source_2 = 
 	{
@@ -433,11 +426,9 @@ int main()
 	};
 
 	TransformationConverter source_2_to_target(source_2, target);
-	source_2_to_target.get_conv_matrix(conv_proxy);
-	source_2_to_target.convert_matrix(tempProxy, converted_proxy);
 
-	std::cout << conv_matrix << std::endl << std::endl;
-	std::cout << converted_matrix << std::endl << std::endl;
+	std::cout << source_2_to_target.get_conv_matrix<Matrix3Eigen>() << std::endl << std::endl;
+	std::cout << source_2_to_target.convert_matrix<Matrix4Eigen>(Matrix4Eigen{ tempMat }) << std::endl << std::endl;
 	
 	std::cout << source_2.isLeftHanded() << std::endl << std::endl;
 	
@@ -458,28 +449,16 @@ int main()
 
 	TransformationConverter source_3_to_unity(source_3, unity);
 
-	Eigen::Quaternion<float> result;
 	Eigen::Quaternion<float> quat; quat = Eigen::AngleAxisf(-2.237f, Eigen::Vector3f::UnitX())
 		* Eigen::AngleAxisf(-2.217f, Eigen::Vector3f::UnitY())
 		* Eigen::AngleAxisf(-0.030f, Eigen::Vector3f::UnitZ());
 	std::cout << quat << std::endl;
-	QuaternionEigen quat_eigen{quat};
-	QuaternionEigen quat_result{ result };
 
-	Eigen::Vector3f point = Eigen::Vector3f{ 1, 2, 3 };
-	Vector3Eigen point_proxy{ point };
+	Eigen::Vector3f point { 1, 2, 3 };
 
-	Eigen::Vector3f p_out;
-	Vector3Eigen p_out_proxy{ p_out };
-
-	source_3_to_unity.convert_quaternion(quat_eigen, quat_result);
-	std::cout << result.normalized() << std::endl << std::endl;
-	source_3_to_unity.get_conv_matrix(conv_proxy);
-
-	source_3_to_unity.convert_point(point_proxy, p_out_proxy);
-
-	std::cout << conv_matrix << std::endl;
-	std::cout << p_out << std::endl;
+	std::cout << source_3_to_unity.convert_quaternion<QuaternionEigen>(QuaternionEigen{ quat }).normalized() << std::endl << std::endl;
+	std::cout << source_3_to_unity.get_conv_matrix<Matrix3Eigen>() << std::endl;
+	std::cout << source_3_to_unity.convert_point<Vector3Eigen>(Vector3Eigen{ point }) << std::endl;
 
 	return 0;
 }
