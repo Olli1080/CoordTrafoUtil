@@ -28,5 +28,5 @@ install(TARGETS
     LIBRARY
         DESTINATION lib
     FILE_SET HEADERS
-        DESTINATION base-transformation/include
+        DESTINATION include/base-transformation
     )
