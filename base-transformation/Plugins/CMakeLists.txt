@@ -1,11 +1,11 @@
 add_library(plugins)
 
-set(INC_DIR include/transformationBase/Plugin)
+set(INC_DIR include/base-transformation/Plugin)
 
 target_include_directories(plugins PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/transformationBase/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/transformationBase/Plugin>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/base-transformation/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/base-transformation/Plugin>
     $<INSTALL_INTERFACE:include>
 )
 

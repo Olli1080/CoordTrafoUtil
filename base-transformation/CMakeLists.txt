@@ -1,10 +1,10 @@
 add_library(base-transformation)
 
-set(INC_DIR include/transformationBase)
+set(INC_DIR include/base-transformation)
 
 target_include_directories(base-transformation PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/transformationBase>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/base-transformation>
     $<INSTALL_INTERFACE:include>
 )
 
