@@ -1,32 +1,41 @@
-find_package(PCL REQUIRED COMPONENTS common)
-find_package (Eigen3 REQUIRED NO_MODULE)
+add_library(base-transformation)
 
-add_library(base_transformation)
+set(INC_DIR include/transformationBase)
 
-target_sources(base_transformation
-    PUBLIC    
-        TransformationHelper.cpp
-        Plugins/eigen.cpp
-        Plugins/pcl.cpp
-    PUBLIC FILE_SET HEADERS FILES
-        concepts.h
-        TransformationHelper.h
-        Plugins/eigen.h
-        Plugins/pcl.h
-        Plugins/plugins.h
+target_include_directories(base-transformation PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/transformationBase>
+    $<INSTALL_INTERFACE:include>
 )
 
-message(PCL_COMMON_INCLUDE_DIR ${PCL_COMMON_INCLUDE_DIR})
+target_sources(base-transformation
+    PRIVATE    
+        src/TransformationHelper.cpp
+    PUBLIC FILE_SET HEADERS FILES
+        ${INC_DIR}/concepts.h
+        ${INC_DIR}/TransformationHelper.h
+)
 
-target_compile_features(base_transformation PUBLIC cxx_std_20)
-target_link_libraries(base_transformation INTERFACE ${PCL_COMMON_LIBRARIES} Eigen3::Eigen)
-target_compile_definitions(base_transformation INTERFACE ${PCL_DEFINITIONS})
-target_include_directories(base_transformation PUBLIC ${PCL_COMMON_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
+if (USE_EIGEN OR USE_PCL)
+    add_subdirectory(Plugins)
+endif()
 
-install(TARGETS 
-        base_transformation
+target_compile_features(base-transformation PUBLIC cxx_std_20)
+
+if (USE_EIGEN OR USE_PCL)
+    target_link_libraries(base-transformation 
+        PUBLIC
+            plugins
+    )
+endif()
+
+install(
+    TARGETS 
+        base-transformation
+    EXPORT
+        base-transformation-targets
     LIBRARY
         DESTINATION lib
     FILE_SET HEADERS
         DESTINATION include/base-transformation
-    )
+)
