@@ -8,7 +8,7 @@ include(GNUInstallDirs)
 option(USE_EIGEN "Build with eigen plugin" ON)
 option(USE_PCL "Build with pcl plugin" ON)
 
-add_subdirectory(transformationBase)
+add_subdirectory(base-transformation)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
