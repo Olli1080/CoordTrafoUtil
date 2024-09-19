@@ -11,7 +11,7 @@ target_include_directories(plugins PUBLIC
 
 target_sources(plugins
     PUBLIC FILE_SET HEADERS 
-    BASE_DIRS ${INC_DIR}
+    BASE_DIRS include/base-transformation
     FILES
         ${INC_DIR}/plugins.h
 )
@@ -25,7 +25,7 @@ if (USE_EIGEN)
     PRIVATE
         src/eigen.cpp
     PUBLIC FILE_SET HEADERS 
-    BASE_DIRS ${INC_DIR}
+    BASE_DIRS include/base-transformation
     FILES
         ${INC_DIR}/eigen.h
     )
@@ -39,7 +39,7 @@ if (USE_PCL)
     PRIVATE
         src/pcl.cpp
     PUBLIC FILE_SET HEADERS 
-    BASE_DIRS ${INC_DIR}
+    BASE_DIRS include/base-transformation
     FILES
         ${INC_DIR}/pcl.h
     )
