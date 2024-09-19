@@ -11,7 +11,9 @@ target_include_directories(base-transformation PUBLIC
 target_sources(base-transformation
     PRIVATE    
         src/TransformationHelper.cpp
-    PUBLIC FILE_SET HEADERS FILES
+    PUBLIC FILE_SET HEADERS
+    BASE_DIRS ${INC_DIR}
+    FILES
         ${INC_DIR}/concepts.h
         ${INC_DIR}/TransformationHelper.h
 )

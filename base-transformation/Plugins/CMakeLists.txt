@@ -10,7 +10,9 @@ target_include_directories(plugins PUBLIC
 )
 
 target_sources(plugins
-    PUBLIC FILE_SET HEADERS FILES
+    PUBLIC FILE_SET HEADERS 
+    BASE_DIRS ${INC_DIR}
+    FILES
         ${INC_DIR}/plugins.h
 )
 
@@ -22,7 +24,9 @@ if (USE_EIGEN)
     target_sources(plugins
     PRIVATE
         src/eigen.cpp
-    PUBLIC FILE_SET HEADERS FILES
+    PUBLIC FILE_SET HEADERS 
+    BASE_DIRS ${INC_DIR}
+    FILES
         ${INC_DIR}/eigen.h
     )
 endif()
@@ -34,7 +38,9 @@ if (USE_PCL)
     target_sources(plugins
     PRIVATE
         src/pcl.cpp
-    PUBLIC FILE_SET HEADERS FILES
+    PUBLIC FILE_SET HEADERS 
+    BASE_DIRS ${INC_DIR}
+    FILES
         ${INC_DIR}/pcl.h
     )
 endif()
