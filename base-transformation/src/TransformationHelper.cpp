@@ -1,7 +1,5 @@
 #include "TransformationHelper.h"
 
-#include <Eigen/Geometry>
-
 namespace Transformation
 {
 	TransformationMeta::TransformationMeta(AxisAlignment right, AxisAlignment forward, AxisAlignment up,
@@ -24,7 +22,7 @@ namespace Transformation
 		if (right_handed)
 			return *right_handed;
 
-		auto cpy = *this;
+		TransformationMeta cpy = *this;
 
 		//1. normalize to positive X axis as right axis
 		if (m_right.axis == Axis::X)
@@ -60,80 +58,9 @@ namespace Transformation
 		return !isRightHanded();
 	}
 
-	Eigen::Matrix3f TransformationConverter::get_conv_matrix() const
+	float TransformationConverter::convert_scale(float scale) const
 	{
-		Eigen::Matrix3f out;
-
-		for (const auto& [column, row, multiplier] : assignments)
-		{
-			//doesn't matter if we go over x or y for the result
-			//only matters for cache performance
-			for (int8_t y = 0; y < 3; ++y)
-			{
-				if (y == row)
-					out(row, column) = multiplier * factor;
-				else
-					out(y, column) = 0.f;
-			}
-		}
-
-		return out;
-	}
-
-	Eigen::Matrix4f TransformationConverter::convert_matrix(const Eigen::Matrix4f& in) const
-	{
-		return convert(assignments, in, factor);
-	}
-
-	Eigen::Quaternion<float> TransformationConverter::convert_quaternion(const Eigen::Quaternion<float>& in) const
-	{
-		Eigen::Quaternion<float> out;
-		
-		if (hand_changed)
-			out.w() = -in.w();
-		else
-			out.w() = in.w();
-
-		auto& coeffs = out.coeffs();
-		const auto& in_c = in.coeffs();
-
-		for (const auto& [column, row, multiplier] : assignments)
-			coeffs[row] = in_c[column] * multiplier;
-		
-		return out;
-	}
-
-	Eigen::Vector3f TransformationConverter::convert_point(const Eigen::Vector3f& in) const
-	{
-		Eigen::Vector3f out;
-
-		for (const auto& [column, row, multiplier] : assignments)
-			out(row, 0) = in(column, 0) * factor * multiplier;
-
-		return out;
-	}
-
-	Eigen::Matrix4f TransformationConverter::convert(const SparseAssignments& ttt, const Eigen::Matrix4f& in, float scale)
-	{
-		Eigen::Matrix4f out;
-		for (size_t x = 0; x < 3; ++x)
-			out(3, x) = 0.f;
-		out(3, 3) = 1.f;
-
-		for (size_t y = 0; y < 3; ++y)
-		{
-			//column == y
-			const auto& [column, out_row, multiplier_y] = ttt[y];
-
-			for (size_t x = 0; x < 3; ++x)
-			{
-				//exploiting symmetry //row == x
-				const auto& [row, out_column, multiplier_x] = ttt[x];
-				out(out_row, out_column) = in(y, x) * multiplier_y * multiplier_x;
-			}
-			out(out_row, 3) = in(y, 3) * multiplier_y * scale;
-		}
-		return out;
+		return factor * scale;
 	}
 
 	void TransformationMeta::rotateLeft()
@@ -197,6 +124,8 @@ namespace Transformation
 	{
 		return static_cast<float>(Num * other.Denom) / static_cast<float>(Denom * other.Num);
 	}
+
+	
 
 	TransformationConverter::TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target)
 		: factor(origin.scale.factor(target.scale)), assignments(compute_assignments(origin, target)), hand_changed(origin.isRightHanded() != target.isRightHanded())

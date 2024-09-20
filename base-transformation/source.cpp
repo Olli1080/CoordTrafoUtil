@@ -5,6 +5,7 @@
 //#include <numbers>
 
 #include <Eigen/Dense>
+#include "Plugins/plugins.h"
 
 #include "TransformationHelper.h"
 
@@ -413,9 +414,10 @@ int main()
 		0, 0, 0, 1;
 
 	TransformationConverter source_to_target(source, target);
+	std::cout << source_to_target.get_conv_matrix<Matrix3Eigen>() << std::endl << std::endl;
 
-	std::cout << source_to_target.get_conv_matrix() << std::endl << std::endl;
-	std::cout << source_to_target.convert_matrix(tempMat) << std::endl << std::endl;
+	Eigen::Matrix4f converted_matrix;
+	std::cout << source_to_target.convert_matrix<Matrix4Eigen>(Matrix4Eigen{ tempMat }) << std::endl << std::endl;
 
 	TransformationMeta source_2 = 
 	{
@@ -426,8 +428,8 @@ int main()
 
 	TransformationConverter source_2_to_target(source_2, target);
 
-	std::cout << source_2_to_target.get_conv_matrix() << std::endl << std::endl;
-	std::cout << source_2_to_target.convert_matrix(tempMat) << std::endl << std::endl;
+	std::cout << source_2_to_target.get_conv_matrix<Matrix3Eigen>() << std::endl << std::endl;
+	std::cout << source_2_to_target.convert_matrix<Matrix4Eigen>(Matrix4Eigen{ tempMat }) << std::endl << std::endl;
 	
 	std::cout << source_2.isLeftHanded() << std::endl << std::endl;
 	
@@ -452,10 +454,12 @@ int main()
 		* Eigen::AngleAxisf(-2.217f, Eigen::Vector3f::UnitY())
 		* Eigen::AngleAxisf(-0.030f, Eigen::Vector3f::UnitZ());
 	std::cout << quat << std::endl;
-	std::cout << source_3_to_unity.convert_quaternion(quat).normalized() << std::endl << std::endl;
 
-	std::cout << source_3_to_unity.get_conv_matrix() << std::endl;
-	std::cout << source_3_to_unity.convert_point(Eigen::Vector3f{ 1, 2, 3 }) << std::endl;
+	Eigen::Vector3f point { 1, 2, 3 };
+
+	std::cout << source_3_to_unity.convert_quaternion<QuaternionEigen>(QuaternionEigen{ quat }).normalized() << std::endl << std::endl;
+	std::cout << source_3_to_unity.get_conv_matrix<Matrix3Eigen>() << std::endl;
+	std::cout << source_3_to_unity.convert_point<Vector3Eigen>(Vector3Eigen{ point }) << std::endl;
 
 	return 0;
 }
