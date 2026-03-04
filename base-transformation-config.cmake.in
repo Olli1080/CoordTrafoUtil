@@ -2,13 +2,54 @@
 
 include(CMakeFindDependencyMacro)
 
-if (@USE_EIGEN@)
-  find_dependency(Eigen3)
-endif()
-if (@USE_PCL@)
-  find_dependency(pcl)
-endif()
-
+# Always find core targets
 include("${CMAKE_CURRENT_LIST_DIR}/base-transformation-targets.cmake")
 
-check_required_components(base-transformation plugins)
+# Optional: Eigen3
+if (@USE_EIGEN@)
+  find_package(Eigen3 QUIET)
+  if (Eigen3_FOUND)
+    set(base-transformation_Eigen3_FOUND TRUE)
+  else()
+    set(base-transformation_Eigen3_FOUND FALSE)
+  endif()
+endif()
+
+# Optional: PCL
+if (@USE_PCL@)
+  find_package(PCL COMPONENTS common QUIET)
+  if (PCL_FOUND)
+    set(base-transformation_PCL_FOUND TRUE)
+  else()
+    set(base-transformation_PCL_FOUND FALSE)
+  endif()
+endif()
+
+# Set component availability
+if (@USE_EIGEN@ AND @USE_PCL@)
+    if (base-transformation_Eigen3_FOUND AND base-transformation_PCL_FOUND)
+        set(base-transformation_plugins_FOUND TRUE)
+    else()
+        set(base-transformation_plugins_FOUND FALSE)
+        set(base-transformation_plugins_NOT_FOUND_MESSAGE "Plugins require Eigen3 and PCL which were not found.")
+    endif()
+elseif (@USE_EIGEN@)
+    if (base-transformation_Eigen3_FOUND)
+        set(base-transformation_plugins_FOUND TRUE)
+    else()
+        set(base-transformation_plugins_FOUND FALSE)
+        set(base-transformation_plugins_NOT_FOUND_MESSAGE "Plugins require Eigen3 which was not found.")
+    endif()
+elseif (@USE_PCL@)
+    if (base-transformation_PCL_FOUND)
+        set(base-transformation_plugins_FOUND TRUE)
+    else()
+        set(base-transformation_plugins_FOUND FALSE)
+        set(base-transformation_plugins_NOT_FOUND_MESSAGE "Plugins require PCL which was not found.")
+    endif()
+endif()
+
+# Check requested components
+# 'plugins' is the only optional component.
+# 'base-transformation-core' (Transformation::Core) is the implicit base.
+check_required_components(plugins)

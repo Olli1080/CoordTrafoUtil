@@ -1,0 +1,10 @@
+The package base-transformation provides CMake targets:
+
+    find_package(base-transformation CONFIG REQUIRED)
+
+    # To use the core library:
+    target_link_libraries(main PRIVATE Transformation::Core)
+
+    # To use the Eigen/PCL plugins (requires the 'eigen' or 'pcl' features):
+    find_package(base-transformation CONFIG REQUIRED COMPONENTS plugins)
+    target_link_libraries(main PRIVATE Transformation::Plugins)

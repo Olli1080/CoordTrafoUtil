@@ -7,7 +7,8 @@ add_executable(transformation_tests
 
 target_link_libraries(transformation_tests 
     PRIVATE 
-        base-transformation
+        Transformation::Core
+        Transformation::Plugins
         GTest::gtest_main
 )
 

@@ -32,5 +32,5 @@ install(
   EXPORT base-transformation-targets
   FILE base-transformation-targets.cmake
   DESTINATION share/base-transformation
-  NAMESPACE base-transformation::
+  NAMESPACE Transformation::
 )
