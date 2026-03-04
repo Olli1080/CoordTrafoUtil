@@ -263,3 +263,34 @@ TEST(TransformationTest, BatchConversion) {
     EXPECT_NEAR(out[1].x(), 10.0f, 1e-5);
     EXPECT_NEAR(out[2].z(), 10.0f, 1e-5);
 }
+
+TEST(TransformationTest, CustomLiterals) {
+    using namespace Transformation::Literals;
+
+    auto meta = TransformationMetaBuilder()
+        .right("X+"_a)
+        .forward("Z+"_a)
+        .up("Y+"_a)
+        .build();
+
+    EXPECT_EQ(meta.right().axis, Axis::X);
+    EXPECT_EQ(meta.right().direction, AxisDirection::POSITIVE);
+    EXPECT_EQ(meta.forward().axis, Axis::Z);
+    EXPECT_EQ(meta.up().axis, Axis::Y);
+
+    auto meta2 = TransformationMetaBuilder()
+        .right("y-"_a) // Case insensitive axis
+        .forward("x-"_a)
+        .up("z+"_a)
+        .build();
+
+    EXPECT_EQ(meta2.right().axis, Axis::Y);
+    EXPECT_EQ(meta2.right().direction, AxisDirection::NEGATIVE);
+    EXPECT_EQ(meta2.forward().axis, Axis::X);
+    EXPECT_EQ(meta2.forward().direction, AxisDirection::NEGATIVE);
+
+    // Test invalid literal (should throw at runtime if not constexpr-evaluated)
+    EXPECT_THROW("X++"_a, std::invalid_argument);
+    EXPECT_THROW("W+"_a, std::invalid_argument);
+    EXPECT_THROW("X?"_a, std::invalid_argument);
+}

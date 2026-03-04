@@ -6,6 +6,15 @@
 #include <numeric>
 #include <stdexcept>
 #include <span>
+#include <algorithm>
+#include <string_view>
+
+#ifdef TRANSFORMATION_NO_EXCEPTIONS
+#include <cassert>
+#define TRANSFORMATION_THROW(exc, msg) assert(false && msg)
+#else
+#define TRANSFORMATION_THROW(exc, msg) throw exc(msg)
+#endif
 
 #include <base-transformation/concepts.h>
 
@@ -37,6 +46,8 @@ namespace Transformation
 
     /**
      * @brief Inverts an axis direction.
+     * @param in The direction to invert.
+     * @return The inverted direction.
      */
 	[[nodiscard]] constexpr AxisDirection invert(AxisDirection in) {
 		return (in == AxisDirection::POSITIVE) ? AxisDirection::NEGATIVE : AxisDirection::POSITIVE;
@@ -63,6 +74,45 @@ namespace Transformation
 	};
 
     /**
+     * @brief Constants for standard axis alignments.
+     */
+    namespace AxisAlignments {
+        static constexpr AxisAlignment X_pos = {Axis::X, AxisDirection::POSITIVE};
+        static constexpr AxisAlignment X_neg = {Axis::X, AxisDirection::NEGATIVE};
+        static constexpr AxisAlignment Y_pos = {Axis::Y, AxisDirection::POSITIVE};
+        static constexpr AxisAlignment Y_neg = {Axis::Y, AxisDirection::NEGATIVE};
+        static constexpr AxisAlignment Z_pos = {Axis::Z, AxisDirection::POSITIVE};
+        static constexpr AxisAlignment Z_neg = {Axis::Z, AxisDirection::NEGATIVE};
+    }
+
+    /**
+     * @brief Inline namespace for axis alignment literals.
+     */
+    inline namespace Literals {
+        /** 
+         * @brief Literal for axis alignment (e.g. "X+"_a, "Z-"_a).
+         * @param str The literal string (must be 2 chars: [X|Y|Z][+|-]).
+         * @param len The length of the string.
+         */
+        constexpr AxisAlignment operator"" _a(const char* str, std::size_t len) {
+            if (len != 2) { TRANSFORMATION_THROW(std::invalid_argument, "Axis literal must be 2 chars, e.g., 'X+'"); return {Axis::X, AxisDirection::POSITIVE}; }
+            
+            Axis ax;
+            if (str[0] == 'X' || str[0] == 'x') ax = Axis::X;
+            else if (str[0] == 'Y' || str[0] == 'y') ax = Axis::Y;
+            else if (str[0] == 'Z' || str[0] == 'z') ax = Axis::Z;
+            else { TRANSFORMATION_THROW(std::invalid_argument, "Invalid axis in literal (must be X, Y, or Z)"); return {Axis::X, AxisDirection::POSITIVE}; }
+
+            AxisDirection dir;
+            if (str[1] == '+') dir = AxisDirection::POSITIVE;
+            else if (str[1] == '-') dir = AxisDirection::NEGATIVE;
+            else { TRANSFORMATION_THROW(std::invalid_argument, "Invalid direction in literal (must be + or -)"); return {Axis::X, AxisDirection::POSITIVE}; }
+
+            return {ax, dir};
+        }
+    }
+
+    /**
      * @brief Represents a scale factor as a rational number (Num/Denom).
      */
 	struct Ratio
@@ -70,28 +120,35 @@ namespace Transformation
 		std::intmax_t Num;
 		std::intmax_t Denom;
 
+        /**
+         * @brief Construct a ratio from numerator and denominator.
+         */
 		constexpr Ratio(std::intmax_t Num, std::intmax_t Denom) : Num(Num), Denom(Denom) {
 			validate();
 			simplify();
 		}
 
+        /** @brief Default constructor for 1/1 ratio. */
 		template<std::intmax_t N, std::intmax_t D>
 		inline constexpr Ratio() : Num(N), Denom(D) {
 			validate();
 			simplify();
 		}
 
+        /** @brief Construct from a std::ratio. */
 		template<std::intmax_t N, std::intmax_t D>
 		inline constexpr Ratio(std::ratio<N, D>) : Num(N), Denom(D) {
 			validate();
 			simplify();
 		}
 
+        /** @brief Calculate the scalar factor of this ratio. */
 		template<typename T = float>
 		[[nodiscard]] constexpr T factor() const {
 			return static_cast<T>(Num) / static_cast<T>(Denom);
 		}
 
+        /** @brief Calculate the conversion factor from this ratio to another. */
 		template<typename T = float>
 		[[nodiscard]] constexpr T factor(const Ratio& other) const {
 			return static_cast<T>(Num * other.Denom) / static_cast<T>(Denom * other.Num);
@@ -101,8 +158,8 @@ namespace Transformation
 
 	private:
 		constexpr void validate() const {
-			if (Denom == 0) throw std::invalid_argument("Denominator cannot be zero");
-			if (Num <= 0 || (Num > 0 && Denom < 0)) throw std::invalid_argument("Ratio must be positive");
+			if (Denom == 0) { TRANSFORMATION_THROW(std::invalid_argument, "Denominator cannot be zero"); }
+			if (Num <= 0 || (Num > 0 && Denom < 0)) { TRANSFORMATION_THROW(std::invalid_argument, "Ratio must be positive"); }
 		}
 		constexpr void simplify() {
 			auto common = std::gcd(Num, Denom);
@@ -117,6 +174,9 @@ namespace Transformation
 	class TransformationMeta
 	{
 	public:
+        /**
+         * @brief Construct metadata by defining the alignment of the Right, Forward, and Up axes.
+         */
 		constexpr TransformationMeta(
 			AxisAlignment right,
 			AxisAlignment forward,
@@ -125,20 +185,27 @@ namespace Transformation
 		) : scale(scale), m_right(right), m_forward(forward), m_up(up), 
             m_handedness(calculate_handedness(right, forward, up))
 		{
-			if (right.axis == forward.axis || forward.axis == up.axis || right.axis == up.axis)
-				throw std::invalid_argument("The same axis occurs twice!");
+			if (right.axis == forward.axis || forward.axis == up.axis || right.axis == up.axis) {
+				TRANSFORMATION_THROW(std::invalid_argument, "The same axis occurs twice!");
+            }
 		}
 
 		bool operator==(const TransformationMeta& other) const = default;
 
+		/** @return The handedness (RIGHT/LEFT) of the system. */
 		[[nodiscard]] constexpr Handedness handedness() const { return m_handedness; }
+		/** @return True if the system is Right-Handed. */
 		[[nodiscard]] constexpr bool isRightHanded() const { return m_handedness == Handedness::RIGHT; }
+		/** @return True if the system is Left-Handed. */
 		[[nodiscard]] constexpr bool isLeftHanded() const { return m_handedness == Handedness::LEFT; }
 
 		Ratio scale;
 
+		/** @return The alignment of the Right axis. */
 		const AxisAlignment& right() const { return m_right; }
+		/** @return The alignment of the Forward axis. */
 		const AxisAlignment& forward() const { return m_forward; }
+		/** @return The alignment of the Up axis. */
 		const AxisAlignment& up() const { return m_up; }
 
 	private:
@@ -173,19 +240,24 @@ namespace Transformation
 
     /**
      * @brief Performs the actual data transformation between two coordinate systems.
-     * @tparam T The scalar type (float, double, etc.)
+     * @tparam T The scalar type (float, double, etc.) used for pre-computed factors.
      */
     template<typename T = float>
 	class TransformationConverter
 	{
 	public:
+        /** @brief Internal mapping structure for a single axis. */
         struct Assignment {
             int8_t origin_axis;
             int8_t target_axis;
             T multiplier;
         };
+        /** @brief Sparse representation of the 3x3 transformation logic. */
         typedef std::array<Assignment, DIM_3D> SparseAssignments;
 
+        /**
+         * @brief Construct a converter between an origin and a target coordinate system.
+         */
 		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target)
             : factor(origin.scale.template factor<T>(target.scale)), 
               assignments(compute_assignments(origin, target)), 
@@ -300,7 +372,7 @@ namespace Transformation
         }
 
         /**
-         * @brief Batch conversion of points. Optimized for memory throughput.
+         * @brief Batch conversion of points.
          */
         template<vector_const_access<T> v_in, vector_full_access<T> v_out>
         void convert_points(std::span<const v_in> in, std::span<v_out> out) const {
@@ -315,7 +387,7 @@ namespace Transformation
         }
 
         /**
-         * @brief Batch conversion of sizes. Optimized for memory throughput.
+         * @brief Batch conversion of sizes.
          */
         template<vector_const_access<T> v_in, vector_full_access<T> v_out>
         void convert_sizes(std::span<const v_in> in, std::span<v_out> out) const {
@@ -383,8 +455,11 @@ namespace Transformation
 	class TransformationMetaBuilder {
 	public:
 		TransformationMetaBuilder& right(Axis ax, AxisDirection dir) { m_right = { ax, dir }; return *this; }
+		TransformationMetaBuilder& right(AxisAlignment aa) { m_right = aa; return *this; }
 		TransformationMetaBuilder& forward(Axis ax, AxisDirection dir) { m_forward = { ax, dir }; return *this; }
+		TransformationMetaBuilder& forward(AxisAlignment aa) { m_forward = aa; return *this; }
 		TransformationMetaBuilder& up(Axis ax, AxisDirection dir) { m_up = { ax, dir }; return *this; }
+		TransformationMetaBuilder& up(AxisAlignment aa) { m_up = aa; return *this; }
 		TransformationMetaBuilder& scale(Ratio r) { m_scale = r; return *this; }
 		TransformationMetaBuilder& scale(std::intmax_t num, std::intmax_t denom) { m_scale = { num, denom }; return *this; }
 
@@ -398,4 +473,26 @@ namespace Transformation
 		AxisAlignment m_up{ Axis::Z, AxisDirection::POSITIVE };
 		Ratio m_scale{ 1, 1 };
 	};
+
+    /**
+     * @brief Presets for common coordinate systems.
+     */
+    namespace Presets {
+        /** @brief Unity: Left-handed, X: Right, Y: Up, Z: Forward. (Meters) */
+        static constexpr TransformationMeta Unity() {
+            return { {Axis::X, AxisDirection::POSITIVE}, {Axis::Z, AxisDirection::POSITIVE}, {Axis::Y, AxisDirection::POSITIVE} };
+        }
+        /** @brief Unreal: Left-handed, X: Forward, Y: Right, Z: Up. (Centimeters) */
+        static constexpr TransformationMeta Unreal() {
+            return { {Axis::Y, AxisDirection::POSITIVE}, {Axis::X, AxisDirection::POSITIVE}, {Axis::Z, AxisDirection::POSITIVE}, {1, 100} };
+        }
+        /** @brief OpenGL/Right-Handed: Right: X+, Forward: -Z, Up: Y+. */
+        static constexpr TransformationMeta OpenGL() {
+            return { {Axis::X, AxisDirection::POSITIVE}, {Axis::Z, AxisDirection::NEGATIVE}, {Axis::Y, AxisDirection::POSITIVE} };
+        }
+        /** @brief ROS: Right-handed, X: Forward, Y: Left, Z: Up. */
+        static constexpr TransformationMeta ROS() {
+            return { {Axis::Y, AxisDirection::NEGATIVE}, {Axis::X, AxisDirection::POSITIVE}, {Axis::Z, AxisDirection::POSITIVE} };
+        }
+    }
 }

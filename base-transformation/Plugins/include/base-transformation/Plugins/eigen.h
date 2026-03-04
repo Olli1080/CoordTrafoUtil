@@ -5,6 +5,11 @@
 
 namespace Transformation
 {
+    template<typename T> struct TraitsEnabled<Eigen::Vector3<T>> : std::true_type {};
+    template<typename T> struct TraitsEnabled<Eigen::Matrix3<T>> : std::true_type {};
+    template<typename T> struct TraitsEnabled<Eigen::Matrix4<T>> : std::true_type {};
+    template<typename T> struct TraitsEnabled<Eigen::Quaternion<T>> : std::true_type {};
+
     template<typename T>
     struct VectorTraits<Eigen::Vector3<T>, T> {
         using type = Eigen::Vector3<T>;

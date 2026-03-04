@@ -4,6 +4,8 @@
 
 namespace Transformation
 {
+    template<> struct TraitsEnabled<pcl::PointXYZ> : std::true_type {};
+
     template<typename T>
     struct VectorTraits<pcl::PointXYZ, T> {
         using type = pcl::PointXYZ;

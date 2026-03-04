@@ -9,7 +9,10 @@ struct MyPoint3D {
     double data[3];
 };
 
-// 2. Specialize VectorTraits for MyPoint3D
+// 2. Signal that traits are enabled for this type
+template<> struct Transformation::TraitsEnabled<MyPoint3D> : std::true_type {};
+
+// 3. Specialize VectorTraits for MyPoint3D
 // This "teaches" CoordTrafoUtil how to handle MyPoint3D
 template<>
 struct Transformation::VectorTraits<MyPoint3D, double> {
