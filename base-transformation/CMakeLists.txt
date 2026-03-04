@@ -14,6 +14,11 @@ target_sources(base-transformation-core
     FILES
         ${INC_DIR}/concepts.h
         ${INC_DIR}/traits.h
+        ${INC_DIR}/types.h
+        ${INC_DIR}/ratio.h
+        ${INC_DIR}/meta.h
+        ${INC_DIR}/converter.h
+        ${INC_DIR}/presets.h
         ${INC_DIR}/TransformationHelper.h
 )
 
