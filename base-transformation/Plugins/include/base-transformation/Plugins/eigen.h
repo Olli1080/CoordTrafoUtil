@@ -5,49 +5,47 @@
 
 namespace Transformation
 {
-    // Eigen::Vector3f specialization
-    template<>
-    struct VectorTraits<Eigen::Vector3f, float> {
-        static float get_x(const Eigen::Vector3f& v) { return v.x(); }
-        static float get_y(const Eigen::Vector3f& v) { return v.y(); }
-        static float get_z(const Eigen::Vector3f& v) { return v.z(); }
-        static float get_idx(const Eigen::Vector3f& v, size_t i) { return v(i); }
-
-        static void set_x(Eigen::Vector3f& v, float val) { v.x() = val; }
-        static void set_y(Eigen::Vector3f& v, float val) { v.y() = val; }
-        static void set_z(Eigen::Vector3f& v, float val) { v.z() = val; }
-        static void set_idx(Eigen::Vector3f& v, size_t i, float val) { v(i) = val; }
+    template<typename T>
+    struct VectorTraits<Eigen::Vector3<T>, T> {
+        using type = Eigen::Vector3<T>;
+        static T get_x(const type& v) { return v.x(); }
+        static T get_y(const type& v) { return v.y(); }
+        static T get_z(const type& v) { return v.z(); }
+        static T get_idx(const type& v, size_t i) { return v(i); }
+        static void set_x(type& v, T val) { v.x() = val; }
+        static void set_y(type& v, T val) { v.y() = val; }
+        static void set_z(type& v, T val) { v.z() = val; }
+        static void set_idx(type& v, size_t i, T val) { v(i) = val; }
     };
 
-    // Eigen::Matrix3f specialization
-    template<>
-    struct MatrixTraits<Eigen::Matrix3f, float> {
+    template<typename T>
+    struct MatrixTraits<Eigen::Matrix3<T>, T> {
+        using type = Eigen::Matrix3<T>;
         static constexpr size_t size = 3;
-        static float get(const Eigen::Matrix3f& m, size_t r, size_t c) { return m(r, c); }
-        static void set(Eigen::Matrix3f& m, size_t r, size_t c, float val) { m(r, c) = val; }
+        static T get(const type& m, size_t r, size_t c) { return m(r, c); }
+        static void set(type& m, size_t r, size_t c, T val) { m(r, c) = val; }
     };
 
-    // Eigen::Matrix4f specialization
-    template<>
-    struct MatrixTraits<Eigen::Matrix4f, float> {
+    template<typename T>
+    struct MatrixTraits<Eigen::Matrix4<T>, T> {
+        using type = Eigen::Matrix4<T>;
         static constexpr size_t size = 4;
-        static float get(const Eigen::Matrix4f& m, size_t r, size_t c) { return m(r, c); }
-        static void set(Eigen::Matrix4f& m, size_t r, size_t c, float val) { m(r, c) = val; }
+        static T get(const type& m, size_t r, size_t c) { return m(r, c); }
+        static void set(type& m, size_t r, size_t c, T val) { m(r, c) = val; }
     };
 
-    // Eigen::Quaternionf specialization
-    template<>
-    struct QuaternionTraits<Eigen::Quaternionf, float> {
-        static float get_x(const Eigen::Quaternionf& q) { return q.x(); }
-        static float get_y(const Eigen::Quaternionf& q) { return q.y(); }
-        static float get_z(const Eigen::Quaternionf& q) { return q.z(); }
-        static float get_w(const Eigen::Quaternionf& q) { return q.w(); }
-        static float get_idx(const Eigen::Quaternionf& q, size_t i) { return q.coeffs()(i); }
-
-        static void set_x(Eigen::Quaternionf& q, float val) { q.x() = val; }
-        static void set_y(Eigen::Quaternionf& q, float val) { q.y() = val; }
-        static void set_z(Eigen::Quaternionf& q, float val) { q.z() = val; }
-        static void set_w(Eigen::Quaternionf& q, float val) { q.w() = val; }
-        static void set_idx(Eigen::Quaternionf& q, size_t i, float val) { q.coeffs()(i) = val; }
+    template<typename T>
+    struct QuaternionTraits<Eigen::Quaternion<T>, T> {
+        using type = Eigen::Quaternion<T>;
+        static T get_x(const type& q) { return q.x(); }
+        static T get_y(const type& q) { return q.y(); }
+        static T get_z(const type& q) { return q.z(); }
+        static T get_w(const type& q) { return q.w(); }
+        static T get_idx(const type& q, size_t i) { return q.coeffs()(i); }
+        static void set_x(type& q, T val) { q.x() = val; }
+        static void set_y(type& q, T val) { q.y() = val; }
+        static void set_z(type& q, T val) { q.z() = val; }
+        static void set_w(type& q, T val) { q.w() = val; }
+        static void set_idx(type& q, size_t i, T val) { q.coeffs()(i) = val; }
     };
 }

@@ -1,0 +1,12 @@
+PROJECT_NAME           = "CoordTrafoUtil"
+PROJECT_NUMBER         = "0.1.0"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = base-transformation/include/base-transformation
+RECURSIVE              = YES
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+EXTRACT_ALL            = YES
+FILE_PATTERNS          = *.h
+USE_MDFILE_AS_MAINPAGE = README.md
+INPUT                 += README.md

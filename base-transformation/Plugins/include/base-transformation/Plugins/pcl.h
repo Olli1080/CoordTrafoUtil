@@ -4,16 +4,16 @@
 
 namespace Transformation
 {
-    template<>
-    struct VectorTraits<pcl::PointXYZ, float> {
-        static float get_x(const pcl::PointXYZ& v) { return v.x; }
-        static float get_y(const pcl::PointXYZ& v) { return v.y; }
-        static float get_z(const pcl::PointXYZ& v) { return v.z; }
-        static float get_idx(const pcl::PointXYZ& v, size_t i) { return v.data[i]; }
-
-        static void set_x(pcl::PointXYZ& v, float val) { v.x = val; }
-        static void set_y(pcl::PointXYZ& v, float val) { v.y = val; }
-        static void set_z(pcl::PointXYZ& v, float val) { v.z = val; }
-        static void set_idx(pcl::PointXYZ& v, size_t i, float val) { v.data[i] = val; }
+    template<typename T>
+    struct VectorTraits<pcl::PointXYZ, T> {
+        using type = pcl::PointXYZ;
+        static T get_x(const type& v) { return static_cast<T>(v.x); }
+        static T get_y(const type& v) { return static_cast<T>(v.y); }
+        static T get_z(const type& v) { return static_cast<T>(v.z); }
+        static T get_idx(const type& v, size_t i) { return static_cast<T>(v.data[i]); }
+        static void set_x(type& v, T val) { v.x = static_cast<float>(val); }
+        static void set_y(type& v, T val) { v.y = static_cast<float>(val); }
+        static void set_z(type& v, T val) { v.z = static_cast<float>(val); }
+        static void set_idx(type& v, size_t i, T val) { v.data[i] = static_cast<float>(val); }
     };
 }

@@ -214,3 +214,52 @@ TEST(TransformationTest, SourceCppRegressionCase3) {
     EXPECT_NEAR(out_point.y(), 3.0f, 1e-5);
     EXPECT_NEAR(out_point.z(), 1.0f, 1e-5);
 }
+
+TEST(TransformationTest, DoublePrecision) {
+    TransformationMeta origin(
+        {Axis::X, AxisDirection::POSITIVE},
+        {Axis::Y, AxisDirection::POSITIVE},
+        {Axis::Z, AxisDirection::POSITIVE}
+    );
+    TransformationMeta target(
+        {Axis::Y, AxisDirection::POSITIVE},
+        {Axis::X, AxisDirection::POSITIVE},
+        {Axis::Z, AxisDirection::POSITIVE}
+    );
+
+    TransformationConverter<double> conv(origin, target);
+    
+    Eigen::Vector3d point(1.23456789012345, 9.87654321098765, 0.0);
+    Eigen::Vector3d out;
+
+    conv.convert_point(point, out);
+
+    EXPECT_DOUBLE_EQ(out.x(), point.y());
+    EXPECT_DOUBLE_EQ(out.y(), point.x());
+    EXPECT_DOUBLE_EQ(out.z(), point.z());
+}
+
+TEST(TransformationTest, BatchConversion) {
+    TransformationMeta origin = TransformationMetaBuilder().build();
+    TransformationMeta target = TransformationMetaBuilder()
+        .right(Axis::Y, AxisDirection::POSITIVE)
+        .forward(Axis::X, AxisDirection::POSITIVE)
+        .scale(1, 10) // 10x scale
+        .build();
+
+    TransformationConverter conv(origin, target);
+
+    std::vector<Eigen::Vector3f> points = {
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f}
+    };
+    std::vector<Eigen::Vector3f> out(3);
+
+    conv.convert_points<Eigen::Vector3f, Eigen::Vector3f>(points, out);
+
+    // Swap X/Y and 10x scale
+    EXPECT_NEAR(out[0].y(), 10.0f, 1e-5);
+    EXPECT_NEAR(out[1].x(), 10.0f, 1e-5);
+    EXPECT_NEAR(out[2].z(), 10.0f, 1e-5);
+}

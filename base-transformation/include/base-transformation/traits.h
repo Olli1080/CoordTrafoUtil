@@ -3,31 +3,36 @@
 
 namespace Transformation
 {
-    // Customization points for different mathematical types.
-    // Users can specialize these templates for their own types.
+    /**
+     * @brief Customization point for vector-like types.
+     * @tparam T The vector wrapper or math type.
+     * @tparam ValueType The scalar type.
+     * 
+     * Requirements:
+     * - using type = T; (The underlying math type)
+     * - static ValueType get_x(const T& v); ...
+     */
+    template<typename T, typename ValueType>
+    struct VectorTraits {};
 
-    template<typename T, typename ValueType = float>
-    struct VectorTraits {
-        // static ValueType get(const T& v, size_t i);
-        // static void set(T& v, size_t i, ValueType val);
-    };
+    /**
+     * @brief Customization point for matrix-like types.
+     * 
+     * Requirements:
+     * - using type = T;
+     * - static constexpr size_t size;
+     * - static ValueType get(const T& m, size_t r, size_t c); ...
+     */
+    template<typename T, typename ValueType>
+    struct MatrixTraits {};
 
-    template<typename T, typename ValueType = float>
-    struct MatrixTraits {
-        // static constexpr size_t size = ...;
-        // static ValueType get(const T& m, size_t r, size_t c);
-        // static void set(T& m, size_t r, size_t c, ValueType val);
-    };
-
-    template<typename T, typename ValueType = float>
-    struct QuaternionTraits {
-        // static ValueType get_x(const T& q);
-        // static ValueType get_y(const T& q);
-        // static ValueType get_z(const T& q);
-        // static ValueType get_w(const T& q);
-        // static void set_x(T& q, ValueType val);
-        // ...
-        // static ValueType get_idx(const T& q, size_t i);
-        // static void set_idx(T& q, size_t i, ValueType val);
-    };
+    /**
+     * @brief Customization point for quaternion-like types.
+     * 
+     * Requirements:
+     * - using type = T;
+     * - static ValueType get_x(const T& q); ...
+     */
+    template<typename T, typename ValueType>
+    struct QuaternionTraits {};
 }

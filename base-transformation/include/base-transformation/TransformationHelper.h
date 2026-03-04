@@ -1,16 +1,19 @@
 #pragma once
 #include <cstdint>
-#include <memory>
 #include <ratio>
 #include <array>
 #include <tuple>
 #include <numeric>
 #include <stdexcept>
+#include <span>
 
 #include "concepts.h"
 
 namespace Transformation
 {
+    /**
+     * @brief Identifies a principal axis in a 3D coordinate system.
+     */
 	enum class Axis : int8_t
 	{
 		X = 0,
@@ -18,27 +21,34 @@ namespace Transformation
 		Z = 2
 	};
 
+    /**
+     * @brief Identifies the direction of an axis.
+     */
 	enum class AxisDirection : int8_t
 	{
 		POSITIVE = +1,
 		NEGATIVE = -1
 	};
 
-	[[nodiscard]] AxisDirection invert(AxisDirection in);
+    /**
+     * @brief Inverts an axis direction.
+     */
+	[[nodiscard]] constexpr AxisDirection invert(AxisDirection in) {
+		return (in == AxisDirection::POSITIVE) ? AxisDirection::NEGATIVE : AxisDirection::POSITIVE;
+	}
 
+    /**
+     * @brief Identifies the handedness of a coordinate system.
+     */
 	enum class Handedness
 	{
 		RIGHT,
 		LEFT
 	};
 
-	enum class TransformOperation
-	{
-		RIGHT_AND_FORWARD,
-		RIGHT_AND_UP,
-		FORWARD_AND_UP
-	};
-
+    /**
+     * @brief Combines an axis and its direction.
+     */
 	struct AxisAlignment
 	{
 		Axis axis;
@@ -47,185 +57,108 @@ namespace Transformation
 		bool operator==(const AxisAlignment& other) const = default;
 	};
 
+    /**
+     * @brief Represents a scale factor as a rational number (Num/Denom).
+     */
 	struct Ratio
 	{
 		std::intmax_t Num;
 		std::intmax_t Denom;
 
-		Ratio(std::intmax_t Num, std::intmax_t Denom);
-
-		template<std::intmax_t N, std::intmax_t D>
-		inline Ratio()
-			: Num(N), Denom(D)
-		{
+		constexpr Ratio(std::intmax_t Num, std::intmax_t Denom) : Num(Num), Denom(Denom) {
 			validate();
 			simplify();
 		}
 
 		template<std::intmax_t N, std::intmax_t D>
-		inline Ratio(std::ratio<N, D> ratio)
-			: Num(N), Denom(D)
-		{
+		inline constexpr Ratio() : Num(N), Denom(D) {
 			validate();
 			simplify();
 		}
 
-		[[nodiscard]] float factor() const;
-		[[nodiscard]] float factor(const Ratio& other) const;
+		template<std::intmax_t N, std::intmax_t D>
+		inline constexpr Ratio(std::ratio<N, D>) : Num(N), Denom(D) {
+			validate();
+			simplify();
+		}
+
+		template<typename T = float>
+		[[nodiscard]] constexpr T factor() const {
+			return static_cast<T>(Num) / static_cast<T>(Denom);
+		}
+
+		template<typename T = float>
+		[[nodiscard]] constexpr T factor(const Ratio& other) const {
+			return static_cast<T>(Num * other.Denom) / static_cast<T>(Denom * other.Num);
+		}
 
 		bool operator==(const Ratio& other) const = default;
 
 	private:
-		void validate() const;
-		void simplify();
+		constexpr void validate() const {
+			if (Denom == 0) throw std::invalid_argument("Denominator cannot be zero");
+			if (Num <= 0 || (Num > 0 && Denom < 0)) throw std::invalid_argument("Ratio must be positive");
+		}
+		constexpr void simplify() {
+			auto common = std::gcd(Num, Denom);
+			Num /= common;
+			Denom /= common;
+		}
 	};
 
-	struct Assignment
-	{
-		int8_t column;
-		int8_t row;
-		float multiplier;
-	};
-	typedef std::array<Assignment, 3> SparseAssignments;
-
-	class TransformationMeta;
-	static Assignment compute_assignment(AxisAlignment axis, AxisAlignment target_axis);
-	static SparseAssignments compute_assignments(const TransformationMeta& origin, const TransformationMeta& target);
-
-
-	class TransformationConverter
-	{
-	public:
-
-		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target);
-
-		template<matrix_full_access<float> m>
-		m& get_conv_matrix(m& out) const
-		{
-			constexpr size_t size = MatrixTraits<m, float>::size;
-			static_assert(size == 3 || size == 4);
-
-			for (const auto& [column, row, multiplier] : assignments)
-			{
-				for (int8_t y = 0; y < 3; ++y)
-				{
-					if (y == row)
-						MatrixTraits<m, float>::set(out, row, column, multiplier * factor);
-					else
-						MatrixTraits<m, float>::set(out, y, column, 0.f);
-				}
-			}
-			if constexpr (size == 4)
-			{
-				MatrixTraits<m, float>::set(out, 3, 0, 0.f);
-				MatrixTraits<m, float>::set(out, 3, 1, 0.f);
-				MatrixTraits<m, float>::set(out, 3, 2, 0.f);
-				MatrixTraits<m, float>::set(out, 3, 3, 1.f);
-
-				MatrixTraits<m, float>::set(out, 0, 3, 0.f);
-				MatrixTraits<m, float>::set(out, 1, 3, 0.f);
-				MatrixTraits<m, float>::set(out, 2, 3, 0.f);
-			}
-
-			return out;
-		}
-
-		[[nodiscard]] float convert_scale(float scale) const;
-
-		template<quaternion_const_access<float> q_0, quaternion_full_access<float> q_1>
-		q_1& convert_quaternion(const q_0& in, q_1& out) const
-		{
-			QuaternionTraits<q_1, float>::set_w(out, hand_changed ? -QuaternionTraits<q_0, float>::get_w(in) : QuaternionTraits<q_0, float>::get_w(in));
-
-			for (const auto& [column, row, multiplier] : assignments)
-				QuaternionTraits<q_1, float>::set_idx(out, row, QuaternionTraits<q_0, float>::get_idx(in, column) * multiplier);
-
-			return out;
-		}
-
-		template<matrix_const_access<float> m_0, matrix_full_access<float> m_1>
-		m_1& convert_matrix(const m_0& in, m_1& out) const
-		{
-			convert(assignments, in, out, factor);
-			return out;
-		}
-
-		template<vector_const_access<float> v_0, vector_full_access<float> v_1>
-		v_1& convert_point(const v_0& in, v_1& out) const
-		{
-			for (const auto& [column, row, multiplier] : assignments)
-				VectorTraits<v_1, float>::set_idx(out, row, VectorTraits<v_0, float>::get_idx(in, column) * factor * multiplier);
-
-			return out;
-		}
-
-		template<vector_const_access<float> s_0, vector_full_access<float> s_1>
-		s_1& convert_size(const s_0& in, s_1& out) const
-		{
-			for (const auto& [column, row, multiplier] : assignments)
-				VectorTraits<s_1, float>::set_idx(out, row, VectorTraits<s_0, float>::get_idx(in, column) * factor);
-
-			return out;
-		}
-
-	private:
-
-		template<matrix_const_access<float> m_0, matrix_full_access<float> m_1>
-		static void convert(const SparseAssignments& ttt, const m_0& in, m_1& out, float scale)
-		{
-			static_assert(MatrixTraits<m_0, float>::size == 4 && MatrixTraits<m_1, float>::size == 4);
-
-			for (size_t x = 0; x < 3; ++x)
-				MatrixTraits<m_1, float>::set(out, 3, x, 0.f);
-			MatrixTraits<m_1, float>::set(out, 3, 3, 1.f);
-
-			for (size_t y = 0; y < 3; ++y)
-			{
-				const auto& [column, out_row, multiplier_y] = ttt[y];
-
-				for (size_t x = 0; x < 3; ++x)
-				{
-					const auto& [row, out_column, multiplier_x] = ttt[x];
-					float val = MatrixTraits<m_0, float>::get(in, y, x);
-					MatrixTraits<m_1, float>::set(out, out_row, out_column, val * multiplier_y * multiplier_x);
-				}
-				float trans_val = MatrixTraits<m_0, float>::get(in, y, 3);
-				MatrixTraits<m_1, float>::set(out, out_row, 3, trans_val * multiplier_y * scale);
-			}
-		}
-
-		float factor;
-		SparseAssignments assignments;
-		bool hand_changed;
-	};
-
+    /**
+     * @brief Metadata describing a coordinate system's orientation and scale.
+     */
 	class TransformationMeta
 	{
 	public:
-
-		TransformationMeta(
+		constexpr TransformationMeta(
 			AxisAlignment right,
 			AxisAlignment forward,
 			AxisAlignment up,
 			Ratio scale = { 1, 1 }
-		);
+		) : scale(scale), m_right(right), m_forward(forward), m_up(up), 
+            m_handedness(calculate_handedness(right, forward, up))
+		{
+			if (right.axis == forward.axis || forward.axis == up.axis || right.axis == up.axis)
+				throw std::invalid_argument("The same axis occurs twice!");
+		}
 
 		bool operator==(const TransformationMeta& other) const = default;
 
-		[[nodiscard]] Handedness handedness() const;
-		[[nodiscard]] bool isRightHanded() const;
-		[[nodiscard]] bool isLeftHanded() const;
+		[[nodiscard]] constexpr Handedness handedness() const { return m_handedness; }
+		[[nodiscard]] constexpr bool isRightHanded() const { return m_handedness == Handedness::RIGHT; }
+		[[nodiscard]] constexpr bool isLeftHanded() const { return m_handedness == Handedness::LEFT; }
 
 		Ratio scale;
 
-		const AxisAlignment& right() const;
-		const AxisAlignment& forward() const;
-		const AxisAlignment& up() const;
+		const AxisAlignment& right() const { return m_right; }
+		const AxisAlignment& forward() const { return m_forward; }
+		const AxisAlignment& up() const { return m_up; }
 
 	private:
+        static constexpr void rotateLeft(AxisAlignment& r, AxisAlignment& f, AxisAlignment& u) {
+            const auto tmp = r; r = f; f = u; u = tmp;
+        }
 
-		void rotateLeft();
-		void rotateRight();
+        static constexpr void rotateRight(AxisAlignment& r, AxisAlignment& f, AxisAlignment& u) {
+            const auto tmp = u; u = f; f = r; r = tmp;
+        }
+
+        static constexpr Handedness calculate_handedness(AxisAlignment r, AxisAlignment f, AxisAlignment u) {
+            if (f.axis == Axis::X) {
+                rotateLeft(r, f, u);
+            } else if (u.axis == Axis::X) {
+                rotateRight(r, f, u);
+            }
+            if (r.direction == AxisDirection::NEGATIVE) {
+                r.direction = AxisDirection::POSITIVE;
+                f.direction = invert(f.direction);
+            }
+            const bool fw_up_eq = f.direction == u.direction;
+            bool is_right = (f.axis == Axis::Y) ? fw_up_eq : !fw_up_eq;
+            return is_right ? Handedness::RIGHT : Handedness::LEFT;
+        }
 
 		AxisAlignment m_right;
 		AxisAlignment m_forward;
@@ -233,6 +166,218 @@ namespace Transformation
 		Handedness m_handedness;
 	};
 
+    /**
+     * @brief Performs the actual data transformation between two coordinate systems.
+     * @tparam T The scalar type (float, double, etc.)
+     */
+    template<typename T = float>
+	class TransformationConverter
+	{
+	public:
+        struct Assignment {
+            int8_t origin_axis;
+            int8_t target_axis;
+            T multiplier;
+        };
+        typedef std::array<Assignment, 3> SparseAssignments;
+
+		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target)
+            : factor(origin.scale.template factor<T>(target.scale)), 
+              assignments(compute_assignments(origin, target)), 
+              hand_changed(origin.handedness() != target.handedness())
+        {}
+
+        /**
+         * @brief Fills a transformation matrix representing the conversion.
+         */
+		template<matrix_full_access<T> m>
+		m& get_conv_matrix(m& out) const
+		{
+			constexpr size_t size = MatrixTraits<m, T>::size;
+			static_assert(size == 3 || size == 4);
+
+			for (const auto& asgn : assignments)
+			{
+				for (int8_t y = 0; y < 3; ++y)
+				{
+					if (y == asgn.target_axis)
+						MatrixTraits<m, T>::set(out, asgn.target_axis, asgn.origin_axis, asgn.multiplier * factor);
+					else
+						MatrixTraits<m, T>::set(out, y, asgn.origin_axis, static_cast<T>(0));
+				}
+			}
+			if constexpr (size == 4)
+			{
+				MatrixTraits<m, T>::set(out, 3, 0, static_cast<T>(0));
+				MatrixTraits<m, T>::set(out, 3, 1, static_cast<T>(0));
+				MatrixTraits<m, T>::set(out, 3, 2, static_cast<T>(0));
+				MatrixTraits<m, T>::set(out, 3, 3, static_cast<T>(1));
+
+				MatrixTraits<m, T>::set(out, 0, 3, static_cast<T>(0));
+				MatrixTraits<m, T>::set(out, 1, 3, static_cast<T>(0));
+				MatrixTraits<m, T>::set(out, 2, 3, static_cast<T>(0));
+			}
+			return out;
+		}
+
+        /**
+         * @brief Returns a transformation matrix by value.
+         */
+        template<matrix_full_access<T> m>
+        auto get_conv_matrix() const -> typename MatrixTraits<m, T>::type {
+            typename MatrixTraits<m, T>::type out;
+            get_conv_matrix(out);
+            return out;
+        }
+
+		[[nodiscard]] T convert_scale(T scale) const { return factor * scale; }
+
+		template<quaternion_const_access<T> q_in, quaternion_full_access<T> q_out>
+		q_out& convert_quaternion(const q_in& in, q_out& out) const
+		{
+			QuaternionTraits<q_out, T>::set_w(out, hand_changed ? -QuaternionTraits<q_in, T>::get_w(in) : QuaternionTraits<q_in, T>::get_w(in));
+
+			for (const auto& asgn : assignments)
+				QuaternionTraits<q_out, T>::set_idx(out, asgn.target_axis, QuaternionTraits<q_in, T>::get_idx(in, asgn.origin_axis) * asgn.multiplier);
+
+			return out;
+		}
+
+        template<quaternion_full_access<T> q_out, quaternion_const_access<T> q_in>
+        auto convert_quaternion(const q_in& in) const -> typename QuaternionTraits<q_out, T>::type {
+            typename QuaternionTraits<q_out, T>::type out;
+            convert_quaternion(in, out);
+            return out;
+        }
+
+		template<matrix_const_access<T> m_in, matrix_full_access<T> m_out>
+		m_out& convert_matrix(const m_in& in, m_out& out) const
+		{
+			convert(assignments, in, out, factor);
+			return out;
+		}
+
+        template<matrix_full_access<T> m_out, matrix_const_access<T> m_in>
+        auto convert_matrix(const m_in& in) const -> typename MatrixTraits<m_out, T>::type {
+            typename MatrixTraits<m_out, T>::type out;
+            convert_matrix(in, out);
+            return out;
+        }
+
+		template<vector_const_access<T> v_in, vector_full_access<T> v_out>
+		v_out& convert_point(const v_in& in, v_out& out) const
+		{
+			for (const auto& asgn : assignments)
+				VectorTraits<v_out, T>::set_idx(out, asgn.target_axis, VectorTraits<v_in, T>::get_idx(in, asgn.origin_axis) * factor * asgn.multiplier);
+			return out;
+		}
+
+        template<vector_full_access<T> v_out, vector_const_access<T> v_in>
+        auto convert_point(const v_in& in) const -> typename VectorTraits<v_out, T>::type {
+            typename VectorTraits<v_out, T>::type out;
+            convert_point(in, out);
+            return out;
+        }
+
+		template<vector_const_access<T> s_in, vector_full_access<T> s_out>
+		s_out& convert_size(const s_in& in, s_out& out) const
+		{
+			for (const auto& asgn : assignments)
+				VectorTraits<s_out, T>::set_idx(out, asgn.target_axis, VectorTraits<s_in, T>::get_idx(in, asgn.origin_axis) * factor);
+			return out;
+		}
+
+        template<vector_full_access<T> s_out, vector_const_access<T> s_in>
+        auto convert_size(const s_in& in) const -> typename VectorTraits<s_out, T>::type {
+            typename VectorTraits<s_out, T>::type out;
+            convert_size(in, out);
+            return out;
+        }
+
+        /**
+         * @brief Batch conversion of points. Optimized for memory throughput.
+         */
+        template<vector_const_access<T> v_in, vector_full_access<T> v_out>
+        void convert_points(std::span<const v_in> in, std::span<v_out> out) const {
+            const size_t count = std::min(in.size(), out.size());
+            const T f = factor;
+            
+            // Point-outer loop is safest for in-place and handles AoS layout common in math libraries.
+            // Modern compilers can still vectorize the inner fixed-size (3) assignment loop.
+            for (size_t i = 0; i < count; ++i) {
+                for (const auto& asgn : assignments) {
+                    T val = VectorTraits<v_in, T>::get_idx(in[i], asgn.origin_axis);
+                    VectorTraits<v_out, T>::set_idx(out[i], asgn.target_axis, val * f * asgn.multiplier);
+                }
+            }
+        }
+
+        /**
+         * @brief Batch conversion of sizes. Optimized for memory throughput.
+         */
+        template<vector_const_access<T> v_in, vector_full_access<T> v_out>
+        void convert_sizes(std::span<const v_in> in, std::span<v_out> out) const {
+            const size_t count = std::min(in.size(), out.size());
+            const T f = factor;
+            for (size_t i = 0; i < count; ++i) {
+                for (const auto& asgn : assignments) {
+                    T val = VectorTraits<v_in, T>::get_idx(in[i], asgn.origin_axis);
+                    VectorTraits<v_out, T>::set_idx(out[i], asgn.target_axis, val * f);
+                }
+            }
+        }
+
+	private:
+		template<matrix_const_access<T> m_in, matrix_full_access<T> m_out>
+		static void convert(const SparseAssignments& ttt, const m_in& in, m_out& out, T scale)
+		{
+			static_assert(MatrixTraits<m_in, T>::size == 4 && MatrixTraits<m_out, T>::size == 4);
+
+			for (size_t x = 0; x < 3; ++x)
+				MatrixTraits<m_out, T>::set(out, 3, x, static_cast<T>(0));
+			MatrixTraits<m_out, T>::set(out, 3, 3, static_cast<T>(1));
+
+			for (size_t y = 0; y < 3; ++y)
+			{
+				const auto& asgn_y = ttt[y];
+				for (size_t x = 0; x < 3; ++x)
+				{
+					const auto& asgn_x = ttt[x];
+					T val = MatrixTraits<m_in, T>::get(in, y, x);
+					MatrixTraits<m_out, T>::set(out, asgn_y.target_axis, asgn_x.target_axis, val * asgn_y.multiplier * asgn_x.multiplier);
+				}
+				T trans_val = MatrixTraits<m_in, T>::get(in, y, 3);
+				MatrixTraits<m_out, T>::set(out, asgn_y.target_axis, 3, trans_val * asgn_y.multiplier * scale);
+			}
+		}
+
+        static constexpr Assignment compute_assignment(AxisAlignment axis, AxisAlignment target_axis) {
+            return {
+                static_cast<int8_t>(axis.axis),
+                static_cast<int8_t>(target_axis.axis),
+                static_cast<T>(axis.direction) * static_cast<T>(target_axis.direction)
+            };
+        }
+
+        static constexpr SparseAssignments compute_assignments(const TransformationMeta& origin, const TransformationMeta& target) {
+            SparseAssignments ttt;
+            auto r = compute_assignment(origin.right(), target.right());
+            ttt[r.origin_axis] = r;
+            auto f = compute_assignment(origin.forward(), target.forward());
+            ttt[f.origin_axis] = f;
+            auto u = compute_assignment(origin.up(), target.up());
+            ttt[u.origin_axis] = u;
+            return ttt;
+        }
+
+		T factor;
+		SparseAssignments assignments;
+		bool hand_changed;
+	};
+
+    /**
+     * @brief Fluent builder for creating TransformationMeta objects.
+     */
 	class TransformationMetaBuilder {
 	public:
 		TransformationMetaBuilder& right(Axis ax, AxisDirection dir) { m_right = { ax, dir }; return *this; }
