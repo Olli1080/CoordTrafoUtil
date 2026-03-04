@@ -1,13 +1,14 @@
 #pragma once
 
-/* These macros are automatically configured by CMake during build */
-#cmakedefine USE_EIGEN
-#cmakedefine USE_PCL
+/* 
+ * Build-time plugin selection. 
+ * These evaluate to 1 or 0 and do not define global macros to avoid clashes.
+ */
 
-#ifdef USE_EIGEN
+#if @HAS_EIGEN@
 #include <base-transformation/Plugins/eigen.h>
 #endif
 
-#ifdef USE_PCL
+#if @HAS_PCL@
 #include <base-transformation/Plugins/pcl.h>
 #endif

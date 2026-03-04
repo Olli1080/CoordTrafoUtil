@@ -9,12 +9,17 @@ option(USE_EIGEN "Build with eigen plugin" ON)
 option(USE_PCL "Build with pcl plugin" ON)
 
 option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_EXAMPLES "Build examples" OFF)
 
 add_subdirectory(base-transformation)
 
 if (BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
 endif()
 
 include(CMakePackageConfigHelpers)

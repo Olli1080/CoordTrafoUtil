@@ -4,7 +4,14 @@
 
 namespace Transformation
 {
-    /** @brief Helper to delay static_assert evaluation until template instantiation. */
+    /** 
+     * @brief Helper to delay static_assert evaluation until template instantiation. 
+     * 
+     * By default, this is set to false. When you specialize a Trait (e.g., VectorTraits) 
+     * for a custom type, you MUST also specialize TraitsEnabled<T> to std::true_type.
+     * This signals to the library that the traits are valid and suppresses compile-time 
+     * "missing specialization" errors.
+     */
     template<typename T> struct TraitsEnabled : std::false_type {};
 
     /**

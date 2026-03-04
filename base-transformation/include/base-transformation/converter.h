@@ -15,13 +15,25 @@ namespace Transformation
 	class TransformationConverter
 	{
 	public:
-        /** @brief Internal mapping structure for a single axis. */
+        /** 
+         * @brief Internal mapping structure for a single axis. 
+         * 
+         * Represents how an axis from the origin system maps to an axis in the target system.
+         * For example, if Origin Right (+X) maps to Target Up (+Y), the assignment would be:
+         * origin_axis: 0 (X), target_axis: 1 (Y), multiplier: 1.0.
+         */
         struct Assignment {
-            int8_t origin_axis;
-            int8_t target_axis;
-            T multiplier;
+            int8_t origin_axis; /**< Index of the axis in the source system (0=X, 1=Y, 2=Z). */
+            int8_t target_axis; /**< Index of the axis in the destination system (0=X, 1=Y, 2=Z). */
+            T multiplier;       /**< Sign multiplier (+1 or -1) reflecting direction alignment. */
         };
-        /** @brief Sparse representation of the 3x3 transformation logic. */
+        /** 
+         * @brief Sparse representation of the 3x3 transformation logic. 
+         * 
+         * Contains three assignments, one for each basis vector (Right, Forward, Up).
+         * This allows the library to perform transformations using sparse assignments
+         * rather than dense matrix multiplications, providing maximum efficiency.
+         */
         typedef std::array<Assignment, DIM_3D> SparseAssignments;
 
         /**
