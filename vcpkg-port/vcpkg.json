@@ -4,7 +4,6 @@
   "description": "A C++20 coordinate transformation utility library.",
   "homepage": "https://github.com/Olli1080/CoordTrafoUtil",
   "license": "MIT",
-  "supports": "cxx20",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
