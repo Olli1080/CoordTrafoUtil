@@ -3,12 +3,20 @@
   
     "configurePresets": [
       {
-        "name": "debug",
-        "generator": "Visual Studio 17 2022",
+        "name": "default",
+        "generator": "Visual Studio 18 2026",
         "binaryDir": "${sourceDir}/build/default",
         "cacheVariables": {
           "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
-          "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      {
+        "name": "tests",
+        "inherits": "default",
+        "binaryDir": "${sourceDir}/build/tests",
+        "cacheVariables": {
+          "BUILD_TESTS": "ON"
         }
       }
     ]
