@@ -4,23 +4,10 @@ namespace Transformation
 {
 	TransformationMeta::TransformationMeta(AxisAlignment right, AxisAlignment forward, AxisAlignment up,
 		Ratio scale)
-		: scale(scale), m_right(right), m_forward(forward), m_up(up)
+		: scale(scale), m_right(right), m_forward(forward), m_up(up), m_handedness(Handedness::RIGHT)
 	{
 		if (right.axis == forward.axis || forward.axis == up.axis || right.axis == up.axis)
-			throw std::exception("The same axis occurs twice!");
-	}
-
-	TransformationMeta::TransformationMeta(const TransformationMeta& other)
-		: scale(other.scale), m_right(other.m_right), m_forward(other.m_forward), m_up(other.m_up)
-	{
-		if (other.right_handed)
-			right_handed = std::make_unique<bool>(*other.right_handed);
-	}
-
-	bool TransformationMeta::isRightHanded() const
-	{
-		if (right_handed)
-			return *right_handed;
+			throw std::invalid_argument("The same axis occurs twice!");
 
 		TransformationMeta cpy = *this;
 
@@ -46,16 +33,23 @@ namespace Transformation
 
 		//if (X, Y, Z) then the sign of Y and Z must be equal otherwise they are different
 		//e.g. (X, Z, Y)
-		right_handed = std::make_unique<bool>((cpy.m_forward.axis == Axis::Y) ? fw_up_eq : !fw_up_eq);
-		return *right_handed;
+		bool is_right = (cpy.m_forward.axis == Axis::Y) ? fw_up_eq : !fw_up_eq;
+		m_handedness = is_right ? Handedness::RIGHT : Handedness::LEFT;
 	}
 
-	/**
-	 * convenience method
-	 */
+	Handedness TransformationMeta::handedness() const
+	{
+		return m_handedness;
+	}
+
+	bool TransformationMeta::isRightHanded() const
+	{
+		return m_handedness == Handedness::RIGHT;
+	}
+
 	bool TransformationMeta::isLeftHanded() const
 	{
-		return !isRightHanded();
+		return m_handedness == Handedness::LEFT;
 	}
 
 	float TransformationConverter::convert_scale(float scale) const
@@ -93,13 +87,13 @@ namespace Transformation
 	{
 		SparseAssignments ttt;
 		auto tmp = compute_assignment(origin.right(), target.right());
-		ttt[std::get<0>(tmp)] = std::move(tmp);
+		ttt[tmp.column] = std::move(tmp);
 
 		tmp = compute_assignment(origin.forward(), target.forward());
-		ttt[std::get<0>(tmp)] = std::move(tmp);
+		ttt[tmp.column] = std::move(tmp);
 
 		tmp = compute_assignment(origin.up(), target.up());
-		ttt[std::get<0>(tmp)] = std::move(tmp);
+		ttt[tmp.column] = std::move(tmp);
 
 		return ttt;
 	}
@@ -113,7 +107,23 @@ namespace Transformation
 
 	Ratio::Ratio(std::intmax_t Num, std::intmax_t Denom)
 		: Num(Num), Denom(Denom)
-	{}
+	{
+		validate();
+		simplify();
+	}
+
+	void Ratio::validate() const
+	{
+		if (Denom == 0) throw std::invalid_argument("Denominator cannot be zero");
+		if (Num <= 0 || Denom < 0) throw std::invalid_argument("Ratio must be positive");
+	}
+
+	void Ratio::simplify()
+	{
+		auto common = std::gcd(Num, Denom);
+		Num /= common;
+		Denom /= common;
+	}
 
 	float Ratio::factor() const
 	{
@@ -125,10 +135,8 @@ namespace Transformation
 		return static_cast<float>(Num * other.Denom) / static_cast<float>(Denom * other.Num);
 	}
 
-	
-
 	TransformationConverter::TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target)
-		: factor(origin.scale.factor(target.scale)), assignments(compute_assignments(origin, target)), hand_changed(origin.isRightHanded() != target.isRightHanded())
+		: factor(origin.scale.factor(target.scale)), assignments(compute_assignments(origin, target)), hand_changed(origin.handedness() != target.handedness())
 	{}
 
 	const AxisAlignment& TransformationMeta::right() const

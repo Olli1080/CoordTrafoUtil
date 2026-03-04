@@ -4,6 +4,8 @@
 #include <ratio>
 #include <array>
 #include <tuple>
+#include <numeric>
+#include <stdexcept>
 
 #include "concepts.h"
 
@@ -24,6 +26,12 @@ namespace Transformation
 
 	[[nodiscard]] AxisDirection invert(AxisDirection in);
 
+	enum class Handedness
+	{
+		RIGHT,
+		LEFT
+	};
+
 	enum class TransformOperation
 	{
 		RIGHT_AND_FORWARD,
@@ -35,6 +43,8 @@ namespace Transformation
 	{
 		Axis axis;
 		AxisDirection direction;
+
+		bool operator==(const AxisAlignment& other) const = default;
 	};
 
 	struct Ratio
@@ -44,22 +54,38 @@ namespace Transformation
 
 		Ratio(std::intmax_t Num, std::intmax_t Denom);
 
-		template<std::intmax_t Num, std::intmax_t Denom>
+		template<std::intmax_t N, std::intmax_t D>
 		inline Ratio()
-			: Num(Num), Denom(Denom)
-		{}
+			: Num(N), Denom(D)
+		{
+			validate();
+			simplify();
+		}
 
-		template<std::intmax_t Num, std::intmax_t Denom>
-		inline Ratio(std::ratio<Num, Denom> ratio)
-			: Num(Num), Denom(Denom)
-		{}
+		template<std::intmax_t N, std::intmax_t D>
+		inline Ratio(std::ratio<N, D> ratio)
+			: Num(N), Denom(D)
+		{
+			validate();
+			simplify();
+		}
 
 		[[nodiscard]] float factor() const;
 		[[nodiscard]] float factor(const Ratio& other) const;
+
+		bool operator==(const Ratio& other) const = default;
+
+	private:
+		void validate() const;
+		void simplify();
 	};
 
-	//column, row, multiplier
-	typedef std::tuple<int8_t, int8_t, float> Assignment;
+	struct Assignment
+	{
+		int8_t column;
+		int8_t row;
+		float multiplier;
+	};
 	typedef std::array<Assignment, 3> SparseAssignments;
 
 	class TransformationMeta;
@@ -109,10 +135,7 @@ namespace Transformation
 		template<quaternion_const_access<float> q_0, quaternion_full_access<float> q_1>
 		q_1& convert_quaternion(const q_0& in, q_1& out) const
 		{
-			if (hand_changed)
-				QuaternionTraits<q_1, float>::set_w(out, -QuaternionTraits<q_0, float>::get_w(in));
-			else
-				QuaternionTraits<q_1, float>::set_w(out, QuaternionTraits<q_0, float>::get_w(in));
+			QuaternionTraits<q_1, float>::set_w(out, hand_changed ? -QuaternionTraits<q_0, float>::get_w(in) : QuaternionTraits<q_0, float>::get_w(in));
 
 			for (const auto& [column, row, multiplier] : assignments)
 				QuaternionTraits<q_1, float>::set_idx(out, row, QuaternionTraits<q_0, float>::get_idx(in, column) * multiplier);
@@ -187,8 +210,9 @@ namespace Transformation
 			Ratio scale = { 1, 1 }
 		);
 
-		TransformationMeta(const TransformationMeta& other);
+		bool operator==(const TransformationMeta& other) const = default;
 
+		[[nodiscard]] Handedness handedness() const;
 		[[nodiscard]] bool isRightHanded() const;
 		[[nodiscard]] bool isLeftHanded() const;
 
@@ -206,7 +230,25 @@ namespace Transformation
 		AxisAlignment m_right;
 		AxisAlignment m_forward;
 		AxisAlignment m_up;
+		Handedness m_handedness;
+	};
 
-		mutable std::unique_ptr<bool> right_handed;
+	class TransformationMetaBuilder {
+	public:
+		TransformationMetaBuilder& right(Axis ax, AxisDirection dir) { m_right = { ax, dir }; return *this; }
+		TransformationMetaBuilder& forward(Axis ax, AxisDirection dir) { m_forward = { ax, dir }; return *this; }
+		TransformationMetaBuilder& up(Axis ax, AxisDirection dir) { m_up = { ax, dir }; return *this; }
+		TransformationMetaBuilder& scale(Ratio r) { m_scale = r; return *this; }
+		TransformationMetaBuilder& scale(std::intmax_t num, std::intmax_t denom) { m_scale = { num, denom }; return *this; }
+
+		TransformationMeta build() const {
+			return { m_right, m_forward, m_up, m_scale };
+		}
+
+	private:
+		AxisAlignment m_right{ Axis::X, AxisDirection::POSITIVE };
+		AxisAlignment m_forward{ Axis::Y, AxisDirection::POSITIVE };
+		AxisAlignment m_up{ Axis::Z, AxisDirection::POSITIVE };
+		Ratio m_scale{ 1, 1 };
 	};
 }
