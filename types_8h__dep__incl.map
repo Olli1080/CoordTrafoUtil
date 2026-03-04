@@ -1,0 +1,18 @@
+<map id="base&#45;transformation/include/base&#45;transformation/types.h" name="base&#45;transformation/include/base&#45;transformation/types.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,216,60"/>
+<area shape="rect" id="Node000002" href="$TransformationHelper_8h.html" title=" " alt="" coords="77,416,288,471"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,74,63,134,39,210,33,250,32,291,39,330,54,367,78,394,108,414,105,418,74,398,50,369,34,331,27,291,27,250,34,208,58,132,86,71"/>
+<area shape="rect" id="Node000003" href="$meta_8h.html" title=" " alt="" coords="77,211,288,265"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="117,73,125,117,138,162,165,209,161,212,134,164,120,118,112,74"/>
+<area shape="rect" id="Node000006" href="$ratio_8h.html" title=" " alt="" coords="148,108,359,163"/>
+<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="161,66,217,106,214,110,157,70"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="107,275,85,293,68,315,59,341,68,367,90,393,118,414,115,418,86,397,63,369,54,341,63,312,81,289,103,271"/>
+<area shape="rect" id="Node000004" href="$converter_8h.html" title=" " alt="" coords="77,313,288,368"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="185,279,185,313,180,313,180,279"/>
+<area shape="rect" id="Node000005" href="$presets_8h.html" title=" " alt="" coords="312,313,523,368"/>
+<area shape="poly" id="edge6_Node000003_Node000005" title=" " alt="" coords="257,268,357,311,355,316,255,273"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="185,382,185,416,180,416,180,382"/>
+<area shape="poly" id="edge7_Node000005_Node000002" title=" " alt="" coords="345,376,245,418,243,413,343,371"/>
+<area shape="poly" id="edge9_Node000006_Node000002" title=" " alt="" coords="347,165,431,201,472,224,507,249,535,276,552,306,555,321,553,337,547,353,537,370,521,384,497,395,435,414,362,428,289,437,288,432,361,423,434,409,495,391,518,379,533,366,543,351,548,336,549,322,547,308,531,280,504,253,469,229,428,206,345,170"/>
+<area shape="poly" id="edge10_Node000006_Node000003" title=" " alt="" coords="229,176,203,212,199,209,225,173"/>
+</map>

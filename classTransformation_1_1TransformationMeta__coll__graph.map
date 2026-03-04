@@ -1,0 +1,5 @@
+<map id="Transformation::TransformationMeta" name="Transformation::TransformationMeta">
+<area shape="rect" id="Node000001" title="Metadata describing a coordinate system&#39;s orientation and scale." alt="" coords="5,93,264,119"/>
+<area shape="rect" id="Node000002" href="$structTransformation_1_1Ratio.html" title="Represents a scale factor as a rational number (Num/Denom)." alt="" coords="53,5,216,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,45,137,93,132,93,132,45"/>
+</map>

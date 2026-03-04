@@ -1,0 +1,14 @@
+<map id="base&#45;transformation/include/base&#45;transformation/ratio.h" name="base&#45;transformation/include/base&#45;transformation/ratio.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,216,60"/>
+<area shape="rect" id="Node000002" href="$TransformationHelper_8h.html" title=" " alt="" coords="56,313,267,368"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,74,93,108,88,153,87,188,93,223,108,264,122,289,139,312,134,315,117,292,103,266,88,224,82,189,83,153,88,108,95,72"/>
+<area shape="rect" id="Node000003" href="$meta_8h.html" title=" " alt="" coords="103,108,313,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="148,68,185,106,181,110,144,72"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="151,173,132,191,118,212,113,237,117,264,129,289,142,312,138,314,124,292,112,265,108,237,114,210,128,187,147,169"/>
+<area shape="rect" id="Node000004" href="$converter_8h.html" title=" " alt="" coords="128,211,339,265"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="221,175,229,210,224,211,215,177"/>
+<area shape="rect" id="Node000005" href="$presets_8h.html" title=" " alt="" coords="363,211,573,265"/>
+<area shape="poly" id="edge6_Node000003_Node000005" title=" " alt="" coords="289,165,401,208,399,213,288,170"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="209,278,182,315,178,312,204,275"/>
+<area shape="poly" id="edge7_Node000005_Node000002" title=" " alt="" coords="376,272,242,316,240,311,374,267"/>
+</map>
