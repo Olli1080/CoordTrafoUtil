@@ -4,6 +4,7 @@ import hashlib
 import urllib.request
 import json
 import re
+import ssl
 
 def calculate_sha512(file_path):
     sha512_hash = hashlib.sha512()
@@ -19,7 +20,10 @@ def update_port(version):
 
     print(f"Downloading archive from {url}...")
     try:
-        urllib.request.urlretrieve(url, temp_file)
+        # Create unverified context to avoid SSL certificate errors on some systems
+        context = ssl._create_unverified_context()
+        with urllib.request.urlopen(url, context=context) as response, open(temp_file, 'wb') as out_file:
+            out_file.write(response.read())
     except Exception as e:
         print(f"Error: Failed to download archive. Ensure the version v{version} exists on GitHub.")
         print(e)
@@ -36,6 +40,8 @@ def update_port(version):
     with open(portfile_path, "r") as f:
         content = f.read()
 
+    # Update REF and SHA512
+    content = re.sub(r'REF v[0-9.]+', f'REF v{version}', content)
     content = re.sub(r'REF "v\$\{VERSION\}"', f'REF v{version}', content)
     content = re.sub(r'SHA512 [a-f0-9]+', f'SHA512 {hash_val}', content)
     content = re.sub(r'SHA512 # TODO:.*', f'SHA512 {hash_val}', content)
