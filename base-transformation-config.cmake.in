@@ -5,51 +5,24 @@ include(CMakeFindDependencyMacro)
 # Always find core targets
 include("${CMAKE_CURRENT_LIST_DIR}/base-transformation-targets.cmake")
 
-# Optional: Eigen3
+# The package name is base-transformation. 
+# We need to handle the 'plugins' component if requested.
+
+# Required if enabled during build
 if (@USE_EIGEN@)
-  find_package(Eigen3 QUIET)
-  if (Eigen3_FOUND)
-    set(base-transformation_Eigen3_FOUND TRUE)
-  else()
-    set(base-transformation_Eigen3_FOUND FALSE)
-  endif()
+  find_dependency(Eigen3)
+  set(base-transformation_Eigen3_FOUND TRUE)
 endif()
 
-# Optional: PCL
 if (@USE_PCL@)
-  find_package(PCL COMPONENTS common QUIET)
-  if (PCL_FOUND)
-    set(base-transformation_PCL_FOUND TRUE)
-  else()
-    set(base-transformation_PCL_FOUND FALSE)
-  endif()
+  find_dependency(PCL COMPONENTS common)
+  set(base-transformation_PCL_FOUND TRUE)
 endif()
 
 # Set component availability
-if (@USE_EIGEN@ AND @USE_PCL@)
-    if (base-transformation_Eigen3_FOUND AND base-transformation_PCL_FOUND)
-        set(base-transformation_plugins_FOUND TRUE)
-    else()
-        set(base-transformation_plugins_FOUND FALSE)
-        set(base-transformation_plugins_NOT_FOUND_MESSAGE "Plugins require Eigen3 and PCL which were not found.")
-    endif()
-elseif (@USE_EIGEN@)
-    if (base-transformation_Eigen3_FOUND)
-        set(base-transformation_plugins_FOUND TRUE)
-    else()
-        set(base-transformation_plugins_FOUND FALSE)
-        set(base-transformation_plugins_NOT_FOUND_MESSAGE "Plugins require Eigen3 which was not found.")
-    endif()
-elseif (@USE_PCL@)
-    if (base-transformation_PCL_FOUND)
-        set(base-transformation_plugins_FOUND TRUE)
-    else()
-        set(base-transformation_plugins_FOUND FALSE)
-        set(base-transformation_plugins_NOT_FOUND_MESSAGE "Plugins require PCL which was not found.")
-    endif()
+if (@USE_EIGEN@ OR @USE_PCL@)
+    set(base-transformation_plugins_FOUND TRUE)
 endif()
 
 # Check requested components
-# 'plugins' is the only optional component.
-# 'base-transformation-core' (Transformation::Core) is the implicit base.
-check_required_components(plugins)
+check_required_components(base-transformation)

@@ -1,5 +1,9 @@
 #pragma once
 
+/* These macros are automatically configured by CMake during build */
+#cmakedefine USE_EIGEN
+#cmakedefine USE_PCL
+
 #ifdef USE_EIGEN
 #include <base-transformation/Plugins/eigen.h>
 #endif

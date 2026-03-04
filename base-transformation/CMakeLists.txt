@@ -28,11 +28,13 @@ endif()
 
 target_compile_features(base-transformation-core INTERFACE cxx_std_20)
 
+set_target_properties(base-transformation-core PROPERTIES EXPORT_NAME Core)
+
 install(
     TARGETS 
         base-transformation-core
     EXPORT
         base-transformation-targets
     FILE_SET HEADERS
-        DESTINATION include/base-transformation
+        DESTINATION include
 )
