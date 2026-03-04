@@ -13,6 +13,7 @@ struct MyPoint3D {
 // This "teaches" CoordTrafoUtil how to handle MyPoint3D
 template<>
 struct Transformation::VectorTraits<MyPoint3D, double> {
+    using type = MyPoint3D;
     static double get_x(const MyPoint3D& v) { return v.data[0]; }
     static double get_y(const MyPoint3D& v) { return v.data[1]; }
     static double get_z(const MyPoint3D& v) { return v.data[2]; }

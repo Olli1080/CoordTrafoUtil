@@ -1,6 +1,6 @@
 #pragma once
 #include <concepts>
-#include "traits.h"
+#include <base-transformation/traits.h>
 
 namespace Transformation
 {

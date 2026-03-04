@@ -1,6 +1,6 @@
 #pragma once
 #include <pcl/point_types.h>
-#include "base-transformation/traits.h"
+#include <base-transformation/traits.h>
 
 namespace Transformation
 {

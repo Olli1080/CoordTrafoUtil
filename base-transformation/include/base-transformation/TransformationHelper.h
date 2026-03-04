@@ -7,10 +7,15 @@
 #include <stdexcept>
 #include <span>
 
-#include "concepts.h"
+#include <base-transformation/concepts.h>
 
 namespace Transformation
 {
+    /** @brief Number of dimensions in a standard 3D vector. */
+    static constexpr size_t DIM_3D = 3;
+    /** @brief Number of dimensions in a 4x4 transformation matrix. */
+    static constexpr size_t DIM_4D = 4;
+
     /**
      * @brief Identifies a principal axis in a 3D coordinate system.
      */
@@ -179,7 +184,7 @@ namespace Transformation
             int8_t target_axis;
             T multiplier;
         };
-        typedef std::array<Assignment, 3> SparseAssignments;
+        typedef std::array<Assignment, DIM_3D> SparseAssignments;
 
 		TransformationConverter(const TransformationMeta& origin, const TransformationMeta& target)
             : factor(origin.scale.template factor<T>(target.scale)), 
@@ -194,11 +199,11 @@ namespace Transformation
 		m& get_conv_matrix(m& out) const
 		{
 			constexpr size_t size = MatrixTraits<m, T>::size;
-			static_assert(size == 3 || size == 4);
+			static_assert(size == DIM_3D || size == DIM_4D);
 
 			for (const auto& asgn : assignments)
 			{
-				for (int8_t y = 0; y < 3; ++y)
+				for (int8_t y = 0; y < static_cast<int8_t>(DIM_3D); ++y)
 				{
 					if (y == asgn.target_axis)
 						MatrixTraits<m, T>::set(out, asgn.target_axis, asgn.origin_axis, asgn.multiplier * factor);
@@ -206,7 +211,7 @@ namespace Transformation
 						MatrixTraits<m, T>::set(out, y, asgn.origin_axis, static_cast<T>(0));
 				}
 			}
-			if constexpr (size == 4)
+			if constexpr (size == DIM_4D)
 			{
 				MatrixTraits<m, T>::set(out, 3, 0, static_cast<T>(0));
 				MatrixTraits<m, T>::set(out, 3, 1, static_cast<T>(0));
@@ -301,9 +306,6 @@ namespace Transformation
         void convert_points(std::span<const v_in> in, std::span<v_out> out) const {
             const size_t count = std::min(in.size(), out.size());
             const T f = factor;
-            
-            // Point-outer loop is safest for in-place and handles AoS layout common in math libraries.
-            // Modern compilers can still vectorize the inner fixed-size (3) assignment loop.
             for (size_t i = 0; i < count; ++i) {
                 for (const auto& asgn : assignments) {
                     T val = VectorTraits<v_in, T>::get_idx(in[i], asgn.origin_axis);
@@ -331,16 +333,16 @@ namespace Transformation
 		template<matrix_const_access<T> m_in, matrix_full_access<T> m_out>
 		static void convert(const SparseAssignments& ttt, const m_in& in, m_out& out, T scale)
 		{
-			static_assert(MatrixTraits<m_in, T>::size == 4 && MatrixTraits<m_out, T>::size == 4);
+			static_assert(MatrixTraits<m_in, T>::size == DIM_4D && MatrixTraits<m_out, T>::size == DIM_4D);
 
-			for (size_t x = 0; x < 3; ++x)
+			for (size_t x = 0; x < DIM_3D; ++x)
 				MatrixTraits<m_out, T>::set(out, 3, x, static_cast<T>(0));
 			MatrixTraits<m_out, T>::set(out, 3, 3, static_cast<T>(1));
 
-			for (size_t y = 0; y < 3; ++y)
+			for (size_t y = 0; y < DIM_3D; ++y)
 			{
 				const auto& asgn_y = ttt[y];
-				for (size_t x = 0; x < 3; ++x)
+				for (size_t x = 0; x < DIM_3D; ++x)
 				{
 					const auto& asgn_x = ttt[x];
 					T val = MatrixTraits<m_in, T>::get(in, y, x);
