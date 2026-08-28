@@ -1,3 +1,6 @@
+# Header-only: no debug artifacts, release-only build.
+set(VCPKG_BUILD_TYPE release)
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Olli1080/CoordTrafoUtil
@@ -24,5 +27,7 @@ vcpkg_cmake_config_fixup(
     PACKAGE_NAME base-transformation
     CONFIG_PATH share/base-transformation
 )
+
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
