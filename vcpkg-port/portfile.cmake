@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Olli1080/CoordTrafoUtil
-    REF v0.1.0
-    SHA512 adaa0f17b93f8d49a21abae4b19a61221fe20c38397c6ca0a035a5939413ce97fcbc5e2c2c294086db34f637d3c3f6e93d2773b5ccdfe1cbb2b1a25037dc6d5b
+    REF v0.1.1
+    SHA512 a959fbede27a8e433c6a3e40b505090695f50bcdf44d2d12a50d441d72429f41deb71258f68edd10bf44288eebf368b7d1febce979dce21bc79a1b703abfa2cd
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
