@@ -1,5 +1,5 @@
 PROJECT_NAME           = "CoordTrafoUtil"
-PROJECT_NUMBER         = "0.1.0"
+PROJECT_NUMBER         = "0.1.1"
 OUTPUT_DIRECTORY       = docs
 INPUT                  = base-transformation/include/base-transformation
 INPUT                 += base-transformation/Plugins/include/base-transformation/Plugins

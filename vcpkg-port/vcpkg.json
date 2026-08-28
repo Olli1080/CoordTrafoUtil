@@ -1,6 +1,6 @@
 {
   "name": "base-transformation",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A C++20 coordinate transformation utility library.",
   "homepage": "https://github.com/Olli1080/CoordTrafoUtil",
   "license": "MIT",
