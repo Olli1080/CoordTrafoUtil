@@ -12,19 +12,14 @@ struct MyPoint3D {
 // 2. Signal that traits are enabled for this type
 template<> struct Transformation::TraitsEnabled<MyPoint3D> : std::true_type {};
 
-// 3. Specialize VectorTraits for MyPoint3D
-// This "teaches" CoordTrafoUtil how to handle MyPoint3D
+// 3. Specialize VectorTraits for MyPoint3D.
+// Inheriting from VectorAccessByIndex synthesises get_x/y/z and set_x/y/z from
+// the get_idx / set_idx pair, so only three members need to be written.
 template<>
-struct Transformation::VectorTraits<MyPoint3D, double> {
+struct Transformation::VectorTraits<MyPoint3D, double>
+    : Transformation::VectorAccessByIndex<Transformation::VectorTraits<MyPoint3D, double>, double> {
     using type = MyPoint3D;
-    static double get_x(const MyPoint3D& v) { return v.data[0]; }
-    static double get_y(const MyPoint3D& v) { return v.data[1]; }
-    static double get_z(const MyPoint3D& v) { return v.data[2]; }
     static double get_idx(const MyPoint3D& v, size_t i) { return v.data[i]; }
-
-    static void set_x(MyPoint3D& v, double val) { v.data[0] = val; }
-    static void set_y(MyPoint3D& v, double val) { v.data[1] = val; }
-    static void set_z(MyPoint3D& v, double val) { v.data[2] = val; }
     static void set_idx(MyPoint3D& v, size_t i, double val) { v.data[i] = val; }
 };
 

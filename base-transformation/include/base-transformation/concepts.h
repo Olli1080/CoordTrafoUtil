@@ -10,6 +10,7 @@ namespace Transformation
     template<typename T, typename ValueType>
     concept matrix_getter = requires(const T m, size_t row, size_t col)
     {
+        typename MatrixTraits<T, ValueType>::type;
         { MatrixTraits<T, ValueType>::get(m, row, col) } -> std::same_as<ValueType>;
         { MatrixTraits<T, ValueType>::size } -> std::convertible_to<size_t>;
     };
@@ -41,6 +42,7 @@ namespace Transformation
     template<typename T, typename ValueType>
     concept vector_getter = requires(const T v, size_t idx)
     {
+        typename VectorTraits<T, ValueType>::type;
         { VectorTraits<T, ValueType>::get_x(v) } -> std::same_as<ValueType>;
         { VectorTraits<T, ValueType>::get_y(v) } -> std::same_as<ValueType>;
         { VectorTraits<T, ValueType>::get_z(v) } -> std::same_as<ValueType>;
@@ -77,6 +79,7 @@ namespace Transformation
     template<typename T, typename ValueType>
     concept quaternion_getter = requires(const T q, size_t idx)
     {
+        typename QuaternionTraits<T, ValueType>::type;
         { QuaternionTraits<T, ValueType>::get_x(q) } -> std::same_as<ValueType>;
         { QuaternionTraits<T, ValueType>::get_y(q) } -> std::same_as<ValueType>;
         { QuaternionTraits<T, ValueType>::get_z(q) } -> std::same_as<ValueType>;

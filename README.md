@@ -62,24 +62,52 @@ For high-performance tasks, use the batch conversion methods which are optimized
 std::vector<Eigen::Vector3f> buffer_in = { ... };
 std::vector<Eigen::Vector3f> buffer_out(buffer_in.size());
 
-converter.convert_points(std::span(buffer_in), std::span(buffer_out));
+converter.convert_points<Eigen::Vector3f, Eigen::Vector3f>(buffer_in, buffer_out);
 ```
 
-## Adding Support for Custom Types
-Specialize `TraitsEnabled` and the corresponding `Traits` struct:
+## Inverting and Composing
 
 ```cpp
-struct MyVec { double x, y, z; };
+TransformationConverter a_to_b(a, b);
+
+auto b_to_a = a_to_b.inverse();        // reverse conversion
+auto a_to_c = a_to_b.then(b_to_c);     // compose (throws if b != b_to_c.origin())
+```
+
+## Compile-Time Use
+Everything needed to build a converter is `constexpr`:
+
+```cpp
+constexpr TransformationConverter<float> unity_to_unreal{ Presets::Unity(), Presets::Unreal() };
+static_assert(unity_to_unreal.convert_scale(1.0f) == 100.0f);
+```
+
+The same constructor also accepts values produced at runtime (e.g. a coordinate-system
+description received over the network).
+
+## Adding Support for Custom Types
+Specialize `TraitsEnabled` and the corresponding `Traits` struct. Inheriting from
+`VectorAccessByIndex` (or `QuaternionAccessByIndex`) synthesises the named component
+accessors, so only `type` and the indexed pair need to be written:
+
+```cpp
+struct MyVec { double d[3]; };
 
 template<> struct Transformation::TraitsEnabled<MyVec> : std::true_type {};
 
 template<>
-struct Transformation::VectorTraits<MyVec, double> {
+struct Transformation::VectorTraits<MyVec, double>
+    : Transformation::VectorAccessByIndex<Transformation::VectorTraits<MyVec, double>, double> {
     using type = MyVec;
-    static double get_x(const MyVec& v) { return v.x; }
-    // ... implement set_x, get_idx, etc.
+    static double get_idx(const MyVec& v, size_t i) { return v.d[i]; }
+    static void   set_idx(MyVec& v, size_t i, double val) { v.d[i] = val; }
 };
 ```
+
+## Debug Output
+`to_string(...)` works for `Axis`, `AxisDirection`, `Handedness`, `AxisAlignment`, and
+`TransformationMeta`. Include `<base-transformation/io.h>` for the matching `operator<<`
+(kept out of the core so it does not pull in `<ostream>`).
 
 ## Installation
 

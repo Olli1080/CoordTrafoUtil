@@ -1,3 +1,19 @@
+# --- Resolve optional dependencies before anything else, so the generated
+#     plugins.h and the installed package config reflect what is actually available.
+
+if (USE_EIGEN)
+    find_package(Eigen3 REQUIRED NO_MODULE)
+endif()
+
+if (USE_PCL)
+    find_package(PCL QUIET COMPONENTS common)
+    if (NOT PCL_FOUND)
+        message(WARNING "USE_PCL is ON but PCL (component: common) was not found. "
+                        "Building without the PCL plugin. Set USE_PCL=OFF to silence this.")
+        set(USE_PCL OFF CACHE BOOL "Build with pcl plugin" FORCE)
+    endif()
+endif()
+
 # Map build options to numeric values for header configuration
 set(HAS_EIGEN 0)
 if (USE_EIGEN)
@@ -29,8 +45,8 @@ target_include_directories(base-transformation-plugins INTERFACE
 
 # Export the generated plugins.h
 target_sources(base-transformation-plugins
-    INTERFACE FILE_SET HEADERS 
-    BASE_DIRS 
+    INTERFACE FILE_SET HEADERS
+    BASE_DIRS
         include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     FILES
@@ -40,11 +56,10 @@ target_sources(base-transformation-plugins
 target_link_libraries(base-transformation-plugins INTERFACE Transformation::Core)
 
 if (USE_EIGEN)
-    find_package(Eigen3 REQUIRED NO_MODULE)
     target_link_libraries(base-transformation-plugins INTERFACE Eigen3::Eigen)
 
     target_sources(base-transformation-plugins
-    INTERFACE FILE_SET HEADERS 
+    INTERFACE FILE_SET HEADERS
     BASE_DIRS include
     FILES
         include/base-transformation/Plugins/eigen.h
@@ -52,11 +67,10 @@ if (USE_EIGEN)
 endif()
 
 if (USE_PCL)
-    find_package(PCL COMPONENTS common)
     target_link_libraries(base-transformation-plugins INTERFACE ${PCL_LIBRARIES})
 
     target_sources(base-transformation-plugins
-    INTERFACE FILE_SET HEADERS 
+    INTERFACE FILE_SET HEADERS
     BASE_DIRS include
     FILES
         include/base-transformation/Plugins/pcl.h
@@ -66,7 +80,7 @@ endif()
 set_target_properties(base-transformation-plugins PROPERTIES EXPORT_NAME Plugins)
 
 install(
-    TARGETS 
+    TARGETS
         base-transformation-plugins
     EXPORT
         base-transformation-targets

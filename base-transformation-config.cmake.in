@@ -2,27 +2,21 @@
 
 include(CMakeFindDependencyMacro)
 
-# Always find core targets
+# Core (header-only) targets.
 include("${CMAKE_CURRENT_LIST_DIR}/base-transformation-targets.cmake")
 
-# The package name is base-transformation. 
-# We need to handle the 'plugins' component if requested.
-
-# Required if enabled during build
+# Re-find whatever plugin dependencies were enabled when the package was built.
 if (@USE_EIGEN@)
   find_dependency(Eigen3)
-  set(base-transformation_Eigen3_FOUND TRUE)
 endif()
 
 if (@USE_PCL@)
   find_dependency(PCL COMPONENTS common)
-  set(base-transformation_PCL_FOUND TRUE)
 endif()
 
-# Set component availability
+# The 'plugins' component is available whenever at least one plugin was built.
 if (@USE_EIGEN@ OR @USE_PCL@)
-    set(base-transformation_plugins_FOUND TRUE)
+  set(base-transformation_plugins_FOUND TRUE)
 endif()
 
-# Check requested components
 check_required_components(base-transformation)

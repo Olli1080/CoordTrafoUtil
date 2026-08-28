@@ -5,6 +5,8 @@
 
 using namespace Transformation;
 
+namespace {
+
 // Helper to convert Axis/Direction to Eigen Vector3f
 Eigen::Vector3f to_vector(AxisAlignment aa) {
     Eigen::Vector3f v = Eigen::Vector3f::Zero();
@@ -19,6 +21,8 @@ bool reference_is_right_handed(const TransformationMeta& meta) {
     Eigen::Vector3f u = to_vector(meta.up());
     return r.cross(f).dot(u) > 0.0f;
 }
+
+} // namespace
 
 TEST(HandednessTest, ExhaustiveCheck) {
     std::vector<Axis> axes = {Axis::X, Axis::Y, Axis::Z};

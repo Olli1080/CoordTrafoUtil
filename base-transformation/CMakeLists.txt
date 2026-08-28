@@ -19,6 +19,7 @@ target_sources(base-transformation-core
         ${INC_DIR}/meta.h
         ${INC_DIR}/converter.h
         ${INC_DIR}/presets.h
+        ${INC_DIR}/io.h
         ${INC_DIR}/TransformationHelper.h
 )
 

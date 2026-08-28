@@ -6,6 +6,14 @@ import json
 import re
 import ssl
 
+try:
+    import certifi
+    _SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    # Fall back to the system trust store. We still verify certificates; the
+    # downloaded archive is additionally pinned by SHA512 in the portfile.
+    _SSL_CONTEXT = ssl.create_default_context()
+
 def calculate_sha512(file_path):
     sha512_hash = hashlib.sha512()
     with open(file_path, "rb") as f:
@@ -20,9 +28,7 @@ def update_port(version):
 
     print(f"Downloading archive from {url}...")
     try:
-        # Create unverified context to avoid SSL certificate errors on some systems
-        context = ssl._create_unverified_context()
-        with urllib.request.urlopen(url, context=context) as response, open(temp_file, 'wb') as out_file:
+        with urllib.request.urlopen(url, context=_SSL_CONTEXT) as response, open(temp_file, 'wb') as out_file:
             out_file.write(response.read())
     except Exception as e:
         print(f"Error: Failed to download archive. Ensure the version v{version} exists on GitHub.")

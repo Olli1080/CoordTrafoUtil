@@ -1,6 +1,6 @@
 {
     "version": 2,
-  
+
     "configurePresets": [
       {
         "name": "default",
@@ -15,6 +15,24 @@
         "name": "tests",
         "inherits": "default",
         "binaryDir": "${sourceDir}/build/tests",
+        "cacheVariables": {
+          "BUILD_TESTS": "ON",
+          "BUILD_EXAMPLES": "ON"
+        }
+      },
+      {
+        "name": "ninja",
+        "generator": "Ninja Multi-Config",
+        "binaryDir": "${sourceDir}/build/ninja",
+        "cacheVariables": {
+          "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      {
+        "name": "ninja-tests",
+        "inherits": "ninja",
+        "binaryDir": "${sourceDir}/build/ninja-tests",
         "cacheVariables": {
           "BUILD_TESTS": "ON",
           "BUILD_EXAMPLES": "ON"

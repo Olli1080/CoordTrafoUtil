@@ -3,6 +3,11 @@ name: Documentation
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'base-transformation/**'
+      - 'README.md'
+      - 'Doxyfile'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:

@@ -17,24 +17,22 @@ namespace Transformation
 		std::intmax_t Num;
 		std::intmax_t Denom;
 
+        /** @brief Default constructor: the identity ratio 1/1. */
+		constexpr Ratio() : Num(1), Denom(1) {}
+
         /**
          * @brief Construct a ratio from numerator and denominator.
+         *
+         * Both must be positive; the ratio is reduced to lowest terms.
          */
 		constexpr Ratio(std::intmax_t Num, std::intmax_t Denom) : Num(Num), Denom(Denom) {
 			validate();
 			simplify();
 		}
 
-        /** @brief Default constructor for 1/1 ratio. */
+        /** @brief Construct from a std::ratio (e.g. std::centi). */
 		template<std::intmax_t N, std::intmax_t D>
-		inline constexpr Ratio() : Num(N), Denom(D) {
-			validate();
-			simplify();
-		}
-
-        /** @brief Construct from a std::ratio. */
-		template<std::intmax_t N, std::intmax_t D>
-		inline constexpr Ratio(std::ratio<N, D>) : Num(N), Denom(D) {
+		constexpr Ratio(std::ratio<N, D>) : Num(N), Denom(D) {
 			validate();
 			simplify();
 		}
@@ -54,12 +52,15 @@ namespace Transformation
 		bool operator==(const Ratio& other) const = default;
 
 	private:
+		// Numerator and denominator must both be strictly positive. validate() runs
+		// before simplify() so that std::gcd() below always sees positive operands
+		// (gcd(0, 0) == 0 would divide by zero).
 		constexpr void validate() const {
 			if (Denom == 0) { TRANSFORMATION_THROW(std::invalid_argument, "Denominator cannot be zero"); }
-			if (Num <= 0 || (Num > 0 && Denom < 0)) { TRANSFORMATION_THROW(std::invalid_argument, "Ratio must be positive"); }
+			if (Num <= 0 || Denom < 0) { TRANSFORMATION_THROW(std::invalid_argument, "Ratio must be positive"); }
 		}
 		constexpr void simplify() {
-			auto common = std::gcd(Num, Denom);
+			const auto common = std::gcd(Num, Denom);
 			Num /= common;
 			Denom /= common;
 		}

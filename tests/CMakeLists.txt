@@ -1,12 +1,14 @@
 find_package(GTest REQUIRED)
+include(GoogleTest)
 
-add_executable(transformation_tests 
+add_executable(transformation_tests
     transformation_tests.cpp
     handedness_tests.cpp
+    converter_extra_tests.cpp
 )
 
-target_link_libraries(transformation_tests 
-    PRIVATE 
+target_link_libraries(transformation_tests
+    PRIVATE
         Transformation::Core
         Transformation::Plugins
         GTest::gtest_main

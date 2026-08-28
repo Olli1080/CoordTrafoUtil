@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(TransformationBase 
+project(TransformationBase
+    VERSION 0.1.0
     LANGUAGES CXX)
 
 include(GNUInstallDirs)
@@ -29,8 +30,16 @@ configure_package_config_file(
   INSTALL_DESTINATION share/base-transformation
 )
 
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/base-transformation-config-version.cmake"
+  VERSION "${PROJECT_VERSION}"
+  COMPATIBILITY SameMajorVersion
+  ARCH_INDEPENDENT
+)
+
 install(FILES
           "${CMAKE_CURRENT_BINARY_DIR}/base-transformation-config.cmake"
+          "${CMAKE_CURRENT_BINARY_DIR}/base-transformation-config-version.cmake"
         DESTINATION share/base-transformation)
 
 install(
